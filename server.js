@@ -33,7 +33,6 @@ app.post('/register', async (req, res) => {
             user,
             pwd,
             cash: 1000.00,
-            portfolioValue: 0.0,
             portfolio: new Map(),
             trades: []
         });
