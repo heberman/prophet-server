@@ -10,6 +10,8 @@ require("./userDetails")
 const mongoose = require("mongoose");
 const User = mongoose.model("UserInfo");
 
+console.log(port);
+
 mongoose.connect("mongodb+srv://heberman:PeanutButter45@prophet.qqyvn4v.mongodb.net/?retryWrites=true&w=majority",{
     useNewURLParser:true
 }).then(() => {console.log("Connected to database");})
