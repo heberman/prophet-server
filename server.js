@@ -38,7 +38,7 @@ const task = async () => {
         console.log(err.message);
     }
     newUser.cash -= 10.0;
-    const response = await axios.put('/user/randotron', newUser);
+    const response = await axios.put('https://thankful-elk-windbreaker.cyclic.app/user/randotron', newUser);
     console.log(response.data);
   } catch (error) {
     console.error(error);
