@@ -6,7 +6,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 require("./userDetails")
-const axios = require('./api/axios');
+const axios = require('axios');
 const schedule = require('node-schedule');
 
 const mongoose = require("mongoose");
@@ -27,7 +27,7 @@ const task = async () => {
     try {
       const user = "randotron"
       const pwd = "Berman#45"
-      const response = await axios.post("/auth",
+      const response = await axios.post("https://thankful-elk-windbreaker.cyclic.app/auth",
           JSON.stringify({ user, pwd }),
           {
               headers: { 'Content-Type': 'application/json' }
