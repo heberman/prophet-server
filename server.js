@@ -45,7 +45,7 @@ const task = async () => {
   }
 };
 
-schedule.scheduleJob('0 * * * *', task);
+schedule.scheduleJob('* * * * *', task);
 
 app.post('/register', async (req, res) => {
     const { user, pwd } = req.body;
