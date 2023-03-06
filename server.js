@@ -22,6 +22,7 @@ app.listen(port, () => {
 });
 
 const task = async () => {
+  console.log("Running task.");
   try {
     var newUser = null;
     try {
