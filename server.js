@@ -21,33 +21,32 @@ app.listen(port, () => {
     console.log("REST API is listening.");
 });
 
-const task = async () => {
-  console.log("Running task.");
-  try {
-    var newUser = null;
+app.post('/trade', async (req, res) => {
+    console.log("Running task.");
     try {
-      const user = "randotron"
-      const pwd = "Berman#45"
-      const response = await axios.post("https://thankful-elk-windbreaker.cyclic.app/auth",
-          JSON.stringify({ user, pwd }),
-          {
-              headers: { 'Content-Type': 'application/json' }
-          }
-      );
-      newUser = response.data['foundUser'];
-    } catch (err) {
-        console.log(err.message);
+        var newUser = null;
+        try {
+        const user = "randotron"
+        const pwd = "Berman#45"
+        const response = await axios.post("https://thankful-elk-windbreaker.cyclic.app/auth",
+            JSON.stringify({ user, pwd }),
+            {
+                headers: { 'Content-Type': 'application/json' }
+            }
+        );
+        newUser = response.data['foundUser'];
+        } catch (err) {
+            console.log(err.message);
+        }
+        newUser.cash -= 10.0;
+        const response = await axios.put('https://thankful-elk-windbreaker.cyclic.app/user/randotron', newUser);
+        console.log(response.data);
+        return res.send( { newUser} );
+    } catch (error) {
+        console.error(error);
+        return res.send({ status: err.message });
     }
-    newUser.cash -= 10.0;
-    const response = await axios.put('https://thankful-elk-windbreaker.cyclic.app/user/randotron', newUser);
-    console.log(response.data);
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-task();
-//schedule.scheduleJob('* * * * *', task);
+});
 
 app.post('/register', async (req, res) => {
     const { user, pwd } = req.body;
