@@ -6,7 +6,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 require("./userDetails")
-import axios from './api/axios';
+const axios = require('./api/axios');
 const schedule = require('node-schedule');
 
 const mongoose = require("mongoose");
