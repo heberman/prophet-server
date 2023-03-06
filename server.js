@@ -6,11 +6,11 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 require("./userDetails")
+import axios from './api/axios';
+const schedule = require('node-schedule');
 
 const mongoose = require("mongoose");
 const User = mongoose.model("UserInfo");
-
-console.log(port);
 
 mongoose.connect("mongodb+srv://heberman:PeanutButter45@prophet.qqyvn4v.mongodb.net/?retryWrites=true&w=majority",{
     useNewURLParser:true
@@ -20,6 +20,32 @@ mongoose.connect("mongodb+srv://heberman:PeanutButter45@prophet.qqyvn4v.mongodb.
 app.listen(port, () => {
     console.log("REST API is listening.");
 });
+
+const task = async () => {
+  try {
+    var newUser = null;
+    try {
+      const user = "randotron"
+      const pwd = "Berman#45"
+      const response = await axios.post("/auth",
+          JSON.stringify({ user, pwd }),
+          {
+              headers: { 'Content-Type': 'application/json' }
+          }
+      );
+      newUser = response.data['foundUser'];
+    } catch (err) {
+        console.log(err.message);
+    }
+    newUser.cash -= 10.0;
+    const response = await axios.put('/user/randotron', newUser);
+    console.log(response.data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+schedule.scheduleJob('0 * * * *', task);
 
 app.post('/register', async (req, res) => {
     const { user, pwd } = req.body;
