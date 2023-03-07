@@ -138,9 +138,8 @@ app.post('/trade', async (req, res) => {
                 }
             } else {
                 newUser.portfolio[trade_ticker] = numShares;
-                console.log(newUser.portfolio[trade_ticker]);
+                console.log(newUser.portfolio);
             }
-            console.log(newUser.portfolio);
             newUser.cash -= numShares * currPrice;
 
             const oldUser = await User.findOneAndUpdate({ user: "randotron" }, newUser).exec();
