@@ -139,6 +139,7 @@ app.post('/trade', async (req, res) => {
                 randoUser.portfolio[trade_ticker] = numShares;
                 console.log(randoUser.portfolio[trade_ticker]);
             }
+            console.log(randoUser.portfolio);
             randoUser.cash -= numShares * currPrice;
 
             const oldUser = await User.findOneAndUpdate({ user: "randotron" }, randoUser).exec();
