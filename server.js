@@ -22,7 +22,7 @@ app.listen(port, () => {
     console.log("REST API is listening.");
 });
 
-fs.createReadStream("./listing_status.csv")
+fs.createReadStream("./nasdaq_screener.csv")
   .pipe(parse({ delimiter: ",", from_line: 2 }))
   .on("data", function (row) {
     ticker_arr = [...ticker_arr, row[0]]
@@ -136,8 +136,8 @@ app.post('/trade', async (req, res) => {
             }
             randoUser.cash -= numShares * currPrice;
 
-            const newUser = await User.findOneAndUpdate({ user: "randotron" }, randoUser).exec();
-            return res.send({ newUser });
+            const oldUser = await User.findOneAndUpdate({ user: "randotron" }, randoUser).exec();
+            return res.send({ oldUser, randoUser });
         }
         console.log("Ticker currently untradable.");
         return res.send({ status: "Ticker currently untradable."});
