@@ -73,6 +73,8 @@ async function getTickerPrice(ticker) {
     }
     currDay = times[i];
     currPrice = newData[times[i]]['4. close'];
+    console.log(yesterdayMS.toLocaleString());
+    console.log(times[i]);
     tradable = (yesterdayMS - (10 * 60 * 1000)) - new Date(times[i]).getTime() <= 0;
     return { currPrice, currDay, tradable, error };    
 }
