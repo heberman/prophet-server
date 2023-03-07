@@ -57,7 +57,7 @@ async function getTickerPrice(ticker) {
     if (!res.ok) {
         throw Error('could not fetch the data for that resource');
     }
-    const data = res.json();
+    const data = await res.json();
     if (data['Error Message'])
         throw Error("Ticker '" + ticker + "' does not exist.");
     const newData = data['Time Series (1min)'];
