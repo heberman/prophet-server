@@ -53,36 +53,28 @@ async function getTickerPrice(ticker) {
     var tradable = null;
     var error = null;
 
-    fetch(api_call)
-        .then(res => {
-            if (!res.ok) {
-                throw Error('could not fetch the data for that resource');
-            }
-            return res.json();
-        })
-        .then(data => {
-            if (data['Error Message'])
-                throw Error("Ticker '" + ticker + "' does not exist.");
-            const newData = data['Time Series (1min)'];
-            const yesterdayMS = getDaysAgo(1);
-            const times = Object.keys(newData);
-            
-            let i = 0;
-            while (yesterdayMS - new Date(times[i]).getTime() < 0) {
-                i++;
-                if (i >= times.length) {
-                    throw Error("Loop went wrong.");
-                }
-            }
-            currDay = times[i];
-            currPrice = newData[times[i]]['4. close'];
-            tradable = (yesterdayMS - (10 * 60 * 1000)) - new Date(times[i]).getTime() <= 0;
-            return { currPrice, currDay, tradable, error };
-        })
-        .catch(err => {
-            error = err.message;
-            console.log(err);
-        });;
+    const res = await fetch(api_call);
+    if (!res.ok) {
+        throw Error('could not fetch the data for that resource');
+    }
+    const data = res.json();
+    if (data['Error Message'])
+        throw Error("Ticker '" + ticker + "' does not exist.");
+    const newData = data['Time Series (1min)'];
+    const yesterdayMS = getDaysAgo(1);
+    const times = Object.keys(newData);
+    
+    let i = 0;
+    while (yesterdayMS - new Date(times[i]).getTime() < 0) {
+        i++;
+        if (i >= times.length) {
+            throw Error("Loop went wrong.");
+        }
+    }
+    currDay = times[i];
+    currPrice = newData[times[i]]['4. close'];
+    tradable = (yesterdayMS - (10 * 60 * 1000)) - new Date(times[i]).getTime() <= 0;
+    return { currPrice, currDay, tradable, error };    
 }
 
 // function getTickerData(ticker, func, interval, outputsize, data_key) {
