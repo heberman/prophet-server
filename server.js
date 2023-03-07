@@ -126,24 +126,25 @@ app.post('/trade', async (req, res) => {
             throw Error(error);
 
         if (tradable) {
-            let randoUser = await User.findOne({ user: "randotron" }).exec();
+            const randoUser = await User.findOne({ user: "randotron" }).exec();
+            let newUser = randoUser;
             const trade = { ticker: trade_ticker, numShares, date: Date(), price: currPrice }
             console.log(trade);
-            randoUser.trades = [trade, ...randoUser.trades];
-            if (randoUser.portfolio[trade_ticker]) {
-                randoUser.portfolio[trade_ticker] += numShares;
-                if (randoUser.portfolio[trade_ticker] <= 0) {
-                    delete randoUser.portfolio[trade_ticker];
+            newUser.trades = [trade, ...randoUser.trades];
+            if (newUser.portfolio[trade_ticker]) {
+                newUser.portfolio[trade_ticker] += numShares;
+                if (newUser.portfolio[trade_ticker] <= 0) {
+                    delete newUser.portfolio[trade_ticker];
                 }
             } else {
-                randoUser.portfolio[trade_ticker] = numShares;
-                console.log(randoUser.portfolio[trade_ticker]);
+                newUser.portfolio[trade_ticker] = numShares;
+                console.log(newUser.portfolio[trade_ticker]);
             }
-            console.log(randoUser.portfolio);
-            randoUser.cash -= numShares * currPrice;
+            console.log(newUser.portfolio);
+            newUser.cash -= numShares * currPrice;
 
-            const oldUser = await User.findOneAndUpdate({ user: "randotron" }, randoUser).exec();
-            return res.send({ oldUser, randoUser });
+            const oldUser = await User.findOneAndUpdate({ user: "randotron" }, newUser).exec();
+            return res.send({ oldUser, newUser });
         }
         console.log("Ticker currently untradable.");
         return res.send({ status: "Ticker currently untradable."});
