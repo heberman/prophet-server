@@ -132,9 +132,9 @@ app.post('/trade', async (req, res) => {
                     delete randoUser.portfolio[trade_ticker];
                 }
             } else {
-                randoUser.portfolio[ticker] = numShares;
+                randoUser.portfolio[trade_ticker] = numShares;
             }
-            randoUser.cash -= num_shares * currPrice;
+            randoUser.cash -= numShares * currPrice;
 
             const newUser = await User.findOneAndUpdate({ user: "randotron" }, randoUser).exec();
             return res.send({ response, newUser });
