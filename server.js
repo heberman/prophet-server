@@ -125,7 +125,6 @@ app.post('/trade', async (req, res) => {
         if (error)
             throw Error(error);
 
-        console.log(currPrice, tradable, error);
         if (tradable) {
             let randoUser = await User.findOne({ user: "randotron" }).exec();
             const trade = { ticker: trade_ticker, numShares, date: Date(), price: currPrice }
@@ -138,6 +137,7 @@ app.post('/trade', async (req, res) => {
                     delete randoUser.portfolio[trade_ticker];
                 }
             } else {
+                console.log('here');
                 randoUser.portfolio[trade_ticker] = numShares;
             }
             console.log(randoUser.portfolio);
