@@ -123,13 +123,13 @@ app.post('/trade', async (req, res) => {
         console.log(currPrice, tradable, error);
         if (tradable) {
             let randoUser = await User.findOne({ user: "randotron" }).exec();
-            const trade = { trade_ticker, numShares, date: Date(), price: currPrice }
+            const trade = { trade: trade_ticker, numShares, date: Date(), price: currPrice }
             console.log(trade);
             randoUser.trades = [trade, ...randoUser.trades];
-            if (randoUser.portfolio[ticker]) {
-                randoUser.portfolio[ticker] += 1;
-                if (randoUser.portfolio[ticker] <= 0) {
-                    delete randoUser.portfolio[ticker];
+            if (randoUser.portfolio[trade_ticker]) {
+                randoUser.portfolio[trade_ticker] += 1;
+                if (randoUser.portfolio[trade_ticker] <= 0) {
+                    delete randoUser.portfolio[trade_ticker];
                 }
             } else {
                 randoUser.portfolio[ticker] = numShares;
