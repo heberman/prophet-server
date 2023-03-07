@@ -39,7 +39,7 @@ function getDaysAgo(days) {
     return daysAgo;
 }
 
-function getTickerPrice(ticker) {
+async function getTickerPrice(ticker) {
     const API_KEY = 'MG0ID5XPDBCTO9FF';
     const api_call = 'https://www.alphavantage.co/query?' 
                     + 'function=TIME_SERIES_INTRADAY'
@@ -122,7 +122,7 @@ app.post('/trade', async (req, res) => {
     const numShares = 1;
     try {
         const trade_ticker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
-        const { currPrice, tradable, error } = getTickerPrice(trade_ticker);
+        const { currPrice, tradable, error } = await getTickerPrice(trade_ticker);
 
         if (error)
             throw Error(error);
