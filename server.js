@@ -137,7 +137,7 @@ app.post('/trade', async (req, res) => {
                     delete newUser.portfolio[trade_ticker];
                 }
             } else {
-                newUser.portfolio.trade_ticker = numShares;
+                newUser.portfolio.set(trade_ticker, numShares);
                 console.log(newUser.portfolio);
             }
             newUser.cash -= numShares * currPrice;
