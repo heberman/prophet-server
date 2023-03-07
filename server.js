@@ -5,12 +5,13 @@ require("dotenv").config();
 const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
-require("./userDetails")
-const axios = require('axios');
-const schedule = require('node-schedule');
+require("./userDetails");
+const fs = require("fs");
+const { parse } = require("csv-parse");
 
 const mongoose = require("mongoose");
 const User = mongoose.model("UserInfo");
+var ticker_arr = [];
 
 mongoose.connect("mongodb+srv://heberman:PeanutButter45@prophet.qqyvn4v.mongodb.net/?retryWrites=true&w=majority",{
     useNewURLParser:true
@@ -21,27 +22,130 @@ app.listen(port, () => {
     console.log("REST API is listening.");
 });
 
-app.post('/trade', async (req, res) => {
-    console.log("Running task.");
-    try {
-        var newUser = null;
-        try {
-        const user = "randotron"
-        const pwd = "Berman#45"
-        const response = await axios.post("https://thankful-elk-windbreaker.cyclic.app/auth",
-            JSON.stringify({ user, pwd }),
-            {
-                headers: { 'Content-Type': 'application/json' }
+fs.createReadStream("./listing_status.csv")
+  .pipe(parse({ delimiter: ",", from_line: 2 }))
+  .on("data", function (row) {
+    ticker_arr = [...ticker_arr, row[0]]
+  })
+  .on("end", function () {
+    console.log("Finished parsing tickers.");
+  })
+  .on("error", function (error) {
+    console.log(error.message);
+  });
+
+function getDaysAgo(days) {
+    const daysAgo = new Date(Math.round((new Date().getTime() - (days * 24 * 60 * 60 * 1000) - 30000) / 60000) * 60000);
+    return daysAgo;
+}
+
+function getTickerPrice(ticker) {
+    const API_KEY = 'MG0ID5XPDBCTO9FF';
+    const api_call = 'https://www.alphavantage.co/query?' 
+                    + 'function=TIME_SERIES_INTRADAY'
+                    + '&symbol=' + ticker
+                    + '&interval=1min'
+                    + '&outputsize=full'
+                    + '&apikey=' + API_KEY;
+
+    var currDay = null;
+    var currPrice = null;
+    var tradable = null;
+    var error = null;
+
+    fetch(api_call)
+        .then(res => {
+            if (!res.ok) {
+                throw Error('could not fetch the data for that resource');
             }
-        );
-        newUser = response.data['foundUser'];
-        } catch (err) {
-            console.log(err.message);
+            return res.json();
+        })
+        .then(data => {
+            if (data['Error Message'])
+                throw Error("Ticker '" + ticker + "' does not exist.");
+            const newData = data['Time Series (1min)'];
+            const yesterdayMS = getDaysAgo(1);
+            const times = Object.keys(newData);
+            
+            let i = 0;
+            while (yesterdayMS - new Date(times[i]).getTime() < 0) {
+                i++;
+                if (i >= times.length) {
+                    throw Error("Loop went wrong.");
+                }
+            }
+            currDay = times[i];
+            currPrice = newData[times[i]]['4. close'];
+            tradable = (yesterdayMS - (10 * 60 * 1000)) - new Date(times[i]).getTime() <= 0;
+        })
+        .catch(err => {
+            error = err.message;
+            console.log(err);
+        });;
+
+    return { currPrice, currDay, tradable, error }
+}
+
+// function getTickerData(ticker, func, interval, outputsize, data_key) {
+//     const API_KEY = 'MG0ID5XPDBCTO9FF';
+//     const api_call = 'https://www.alphavantage.co/query?' 
+//                     + 'function=' + func
+//                     + '&symbol=' + ticker
+//                     + (interval ? '&interval=' + interval : '')
+//                     + '&outputsize=' + outputsize
+//                     + '&apikey=' + API_KEY;
+//     var newData = null;
+//     var error = null;
+
+//     fetch(api_call)
+//         .then(res => {
+//             if (!res.ok) {
+//                 throw Error('could not fetch the data for that resource');
+//             }
+//             return res.json();
+//         })
+//         .then(data => {
+//             if (data['Error Message'])
+//                 throw Error("Ticker '" + ticker + "' does not exist.");
+//             newData = data[data_key];
+//         })
+//         .catch(err => {
+//             error = err.message;
+//             console.log(err);
+//         });
+
+//     return { newData, error }
+// }
+
+app.post('/trade', async (req, res) => {
+    console.log("Making random trade...");
+    const numShares = 1;
+    try {
+        let randoUser = await User.findOne({ user: "randotron" }).exec();
+
+        const trade_ticker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
+        const { currPrice, tradable, error } = getTickerPrice(trade_ticker);
+
+        if (error)
+            throw Error(error);
+
+        if (tradable) {
+            const trade = { trade_ticker, numShares, date: Date(), price: currPrice }
+            randoUser.trades = [trade, ...randoUser.trades];
+            if (randoUser.portfolio[ticker]) {
+                randoUser.portfolio[ticker] += 1;
+                if (randoUser.portfolio[ticker] <= 0) {
+                    delete randoUser.portfolio[ticker];
+                }
+            } else {
+                randoUser.portfolio[ticker] = numShares;
+            }
+            randoUser.cash -= num_shares * currPrice;
+
+            const newUser = await User.findOneAndUpdate({ user: "randotron" }, randoUser).exec();
+            return res.send({ response, newUser });
         }
-        newUser.cash -= 10.0;
-        const response = await axios.put('https://thankful-elk-windbreaker.cyclic.app/user/randotron', newUser);
-        console.log(response.data);
-        return res.send( { newUser} );
+        return res.send({ status: "Ticker currently untradable."});
     } catch (error) {
         console.error(error);
         return res.send({ status: err.message });
