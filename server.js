@@ -78,8 +78,6 @@ async function getTickerPrice(ticker) {
     }
     currDay = times[i];
     currPrice = newData[times[i]]['4. close'];
-    console.log(yesterdayMS.toLocaleString());
-    console.log(times[i]);
     tradable = (yesterdayMS - (10 * 60 * 1000)) - new Date(times[i]).getTime() <= 0;
     return { currPrice, currDay, tradable, error };    
 }
@@ -134,7 +132,7 @@ app.post('/trade', async (req, res) => {
             console.log(trade);
             randoUser.trades = [trade, ...randoUser.trades];
             if (randoUser.portfolio[trade_ticker]) {
-                randoUser.portfolio[trade_ticker] += 1;
+                randoUser.portfolio[trade_ticker] += numShares;
                 if (randoUser.portfolio[trade_ticker] <= 0) {
                     delete randoUser.portfolio[trade_ticker];
                 }
