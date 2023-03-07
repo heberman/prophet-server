@@ -131,6 +131,7 @@ app.post('/trade', async (req, res) => {
 
         if (tradable) {
             const trade = { trade_ticker, numShares, date: Date(), price: currPrice }
+            console.log(trade);
             randoUser.trades = [trade, ...randoUser.trades];
             if (randoUser.portfolio[ticker]) {
                 randoUser.portfolio[ticker] += 1;
@@ -145,6 +146,7 @@ app.post('/trade', async (req, res) => {
             const newUser = await User.findOneAndUpdate({ user: "randotron" }, randoUser).exec();
             return res.send({ response, newUser });
         }
+        console.log("Ticker currently untradable.");
         return res.send({ status: "Ticker currently untradable."});
     } catch (error) {
         console.error(error);
