@@ -123,7 +123,7 @@ app.post('/trade', async (req, res) => {
         console.log(currPrice, tradable, error);
         if (tradable) {
             let randoUser = await User.findOne({ user: "randotron" }).exec();
-            const trade = { trade: trade_ticker, numShares, date: Date(), price: currPrice }
+            const trade = { ticker: trade_ticker, numShares, date: Date(), price: currPrice }
             console.log(trade);
             randoUser.trades = [trade, ...randoUser.trades];
             if (randoUser.portfolio[trade_ticker]) {
