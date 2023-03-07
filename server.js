@@ -121,8 +121,6 @@ app.post('/trade', async (req, res) => {
     console.log("Making random trade...");
     const numShares = 1;
     try {
-        let randoUser = await User.findOne({ user: "randotron" }).exec();
-
         const trade_ticker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
         const { currPrice, tradable, error } = getTickerPrice(trade_ticker);
 
@@ -130,6 +128,7 @@ app.post('/trade', async (req, res) => {
             throw Error(error);
 
         if (tradable) {
+            let randoUser = await User.findOne({ user: "randotron" }).exec();
             const trade = { trade_ticker, numShares, date: Date(), price: currPrice }
             console.log(trade);
             randoUser.trades = [trade, ...randoUser.trades];
