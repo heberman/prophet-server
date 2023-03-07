@@ -112,8 +112,8 @@ app.post('/trade', async (req, res) => {
     console.log("Making random trade...");
     const numShares = 1;
     try {
-        //const trade_ticker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
-        const trade_ticker = "F";
+        const trade_ticker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
+        //const trade_ticker = "F";
         console.log(trade_ticker);
         const { currPrice, tradable, error } = await getTickerPrice(trade_ticker);
 
