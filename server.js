@@ -82,7 +82,7 @@ async function getTickerPrice(ticker) {
             error = err.message;
             console.log(err);
         });;
-
+    console.log(currPrice, currDay, tradable, error);
     return { currPrice, currDay, tradable, error }
 }
 
