@@ -137,7 +137,7 @@ app.post('/trade', async (req, res) => {
             randoUser.cash -= numShares * currPrice;
 
             const newUser = await User.findOneAndUpdate({ user: "randotron" }, randoUser).exec();
-            return res.send({ response, newUser });
+            return res.send({ newUser });
         }
         console.log("Ticker currently untradable.");
         return res.send({ status: "Ticker currently untradable."});
