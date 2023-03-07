@@ -34,10 +34,15 @@ fs.createReadStream("./nasdaq_screener.csv")
     console.log(error.message);
   });
 
-function getDaysAgo(days) {
-    const daysAgo = new Date(Math.round((new Date().getTime() - (days * 24 * 60 * 60 * 1000) - 30000) / 60000) * 60000);
+  function getDaysAgo(days) {
+    const now = new Date();
+    const timezoneOffset = now.getTimezoneOffset() * 60 * 1000; // Convert timezone offset to milliseconds
+    const easternTimezoneOffset = -4 * 60 * 60 * 1000; // Eastern Timezone is UTC-4
+    
+    const daysAgo = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000) + timezoneOffset + easternTimezoneOffset);
+    
     return daysAgo;
-}
+  }
 
 async function getTickerPrice(ticker) {
     const API_KEY = 'MG0ID5XPDBCTO9FF';
