@@ -77,13 +77,12 @@ async function getTickerPrice(ticker) {
             currDay = times[i];
             currPrice = newData[times[i]]['4. close'];
             tradable = (yesterdayMS - (10 * 60 * 1000)) - new Date(times[i]).getTime() <= 0;
+            return { currPrice, currDay, tradable, error };
         })
         .catch(err => {
             error = err.message;
             console.log(err);
         });;
-    console.log(currPrice, currDay, tradable, error);
-    return { currPrice, currDay, tradable, error }
 }
 
 // function getTickerData(ticker, func, interval, outputsize, data_key) {
@@ -122,6 +121,7 @@ app.post('/trade', async (req, res) => {
     const numShares = 1;
     try {
         const trade_ticker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
+        console.log(trade_ticker);
         const { currPrice, tradable, error } = await getTickerPrice(trade_ticker);
 
         if (error)
