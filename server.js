@@ -129,7 +129,6 @@ app.post('/trade', async (req, res) => {
             let randoUser = await User.findOne({ user: "randotron" }).exec();
             const trade = { ticker: trade_ticker, numShares, date: Date(), price: currPrice }
             console.log(trade);
-            console.log(randoUser.portfolio);
             randoUser.trades = [trade, ...randoUser.trades];
             if (randoUser.portfolio[trade_ticker]) {
                 randoUser.portfolio[trade_ticker] += numShares;
@@ -137,10 +136,9 @@ app.post('/trade', async (req, res) => {
                     delete randoUser.portfolio[trade_ticker];
                 }
             } else {
-                console.log('here');
                 randoUser.portfolio[trade_ticker] = numShares;
+                console.log(randoUser.portfolio[trade_ticker]);
             }
-            console.log(randoUser.portfolio);
             randoUser.cash -= numShares * currPrice;
 
             const oldUser = await User.findOneAndUpdate({ user: "randotron" }, randoUser).exec();
