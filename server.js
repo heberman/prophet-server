@@ -150,7 +150,7 @@ app.post('/trade', async (req, res) => {
         return res.send({ status: "Ticker currently untradable."});
     } catch (error) {
         console.error(error);
-        return res.send({ status: err.message });
+        return res.send({ status: error.message });
     }
 });
 
