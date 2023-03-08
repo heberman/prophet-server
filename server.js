@@ -104,7 +104,6 @@ async function getTickerData(ticker, func, interval, outputsize, data_key) {
             throw Error('could not fetch the data for that resource');
         }
         const data = await res.json();
-        console.log(data);
         if (data['Error Message'])
             throw Error(ticker + ": " + data['Error Message']);
         newData = data[data_key];
@@ -168,7 +167,6 @@ app.get('/price/:ticker', async (req, res) => {
 
 app.post('/data/:ticker', async (req, res) => {
     const ticker = req.params['ticker'];
-    console.log(req.body);
     const { func, interval, outputsize, data_key } = req.body;
     try {
         const { data, error } = await getTickerData(ticker, func, interval, outputsize, data_key);
