@@ -123,13 +123,13 @@ async function getUser(username) {
 }
 
 async function getPortfolioValue(portfolio) {
+    console.log(portfolio);
     let pval = 0;
     for (const ticker of Object.keys(portfolio)) {
         const shares = portfolio[ticker];
         const { currPrice } = await getTickerPrice(ticker);
         pval += shares * currPrice;
     }
-    console.log(pval);
     return pval;
 }
 
@@ -236,6 +236,7 @@ app.get('/user/:uname', async (req, res) => {
         const foundUser = await getUser(uname);
         if (!foundUser)
             return res.sendStatus(404);
+        cons
         const portVal = await getPortfolioValue(foundUser.portfolio);
         return res.send({ foundUser, portVal });
     } catch (err) {
