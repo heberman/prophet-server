@@ -105,7 +105,7 @@ async function getTickerData(ticker, func, interval, outputsize, data_key) {
         }
         const data = await res.json();
         if (data['Error Message'])
-            throw Error("Ticker '" + ticker + "' does not exist.");
+            throw Error(ticker + ": " + data['Error Message']);
         newData = data[data_key];
     } catch(err) {
         error = err.message;
