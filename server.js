@@ -167,6 +167,7 @@ app.get('/price/:ticker', async (req, res) => {
 
 app.get('/data/:ticker', async (req, res) => {
     const ticker = req.params['ticker'];
+    console.log(req.body);
     const { func, interval, outputsize, data_key } = req.body;
     try {
         const { data, error } = await getTickerData(ticker, func, interval, outputsize, data_key);
