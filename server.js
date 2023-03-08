@@ -58,60 +58,62 @@ async function getTickerPrice(ticker) {
     var tradable = null;
     var error = null;
 
-    const res = await fetch(api_call);
-    if (!res.ok) {
-        throw Error('could not fetch the data for that resource');
-    }
-    const data = await res.json();
-    if (data['Error Message'])
-        throw Error("Ticker '" + ticker + "' does not exist.");
-    const newData = data['Time Series (1min)'];
-    const yesterdayMS = getDaysAgo(1);
-    const times = Object.keys(newData);
-    
-    let i = 0;
-    while (yesterdayMS - new Date(times[i]).getTime() < 0) {
-        i++;
-        if (i >= times.length) {
-            throw Error("Loop went wrong.");
+    try {
+        const res = await fetch(api_call);
+        if (!res.ok) {
+            throw Error('could not fetch the data for that resource');
         }
+        const data = await res.json();
+        if (data['Error Message'])
+            throw Error("Ticker '" + ticker + "' does not exist.");
+        const newData = data['Time Series (1min)'];
+        const yesterdayMS = getDaysAgo(1);
+        const times = Object.keys(newData);
+        
+        let i = 0;
+        while (yesterdayMS - new Date(times[i]).getTime() < 0) {
+            i++;
+            if (i >= times.length) {
+                throw Error("Loop went wrong.");
+            }
+        }
+        currDay = times[i];
+        currPrice = newData[times[i]]['4. close'];
+        tradable = (yesterdayMS - (10 * 60 * 1000)) - new Date(times[i]).getTime() <= 0;
+    } catch (err) {
+        error = err.message;
+        console.log(err);
     }
-    currDay = times[i];
-    currPrice = newData[times[i]]['4. close'];
-    tradable = (yesterdayMS - (10 * 60 * 1000)) - new Date(times[i]).getTime() <= 0;
     return { currPrice, currDay, tradable, error };    
 }
 
-// function getTickerData(ticker, func, interval, outputsize, data_key) {
-//     const API_KEY = 'MG0ID5XPDBCTO9FF';
-//     const api_call = 'https://www.alphavantage.co/query?' 
-//                     + 'function=' + func
-//                     + '&symbol=' + ticker
-//                     + (interval ? '&interval=' + interval : '')
-//                     + '&outputsize=' + outputsize
-//                     + '&apikey=' + API_KEY;
-//     var newData = null;
-//     var error = null;
+async function getTickerData(ticker, func, interval, outputsize, data_key) {
+    const API_KEY = 'MG0ID5XPDBCTO9FF';
+    const api_call = 'https://www.alphavantage.co/query?' 
+                    + 'function=' + func
+                    + '&symbol=' + ticker
+                    + (interval ? '&interval=' + interval : '')
+                    + '&outputsize=' + outputsize
+                    + '&apikey=' + API_KEY;
+    var newData = null;
+    var error = null;
 
-//     fetch(api_call)
-//         .then(res => {
-//             if (!res.ok) {
-//                 throw Error('could not fetch the data for that resource');
-//             }
-//             return res.json();
-//         })
-//         .then(data => {
-//             if (data['Error Message'])
-//                 throw Error("Ticker '" + ticker + "' does not exist.");
-//             newData = data[data_key];
-//         })
-//         .catch(err => {
-//             error = err.message;
-//             console.log(err);
-//         });
+    try {
+        const res = await fetch(api_call);
+        if (!res.ok) {
+            throw Error('could not fetch the data for that resource');
+        }
+        const data = await res.json();
+        if (data['Error Message'])
+            throw Error("Ticker '" + ticker + "' does not exist.");
+        newData = data[data_key];
+    } catch(err) {
+        error = err.message;
+        console.log(err);
+    };
 
-//     return { newData, error }
-// }
+    return { newData, error }
+}
 
 app.post('/trade', async (req, res) => {
     console.log("Making random trade...");
@@ -156,7 +158,19 @@ app.get('/price/:ticker', async (req, res) => {
     const ticker = req.params['ticker'];
     try {
         const { currPrice, currDay, tradable, error } = await getTickerPrice(ticker);
-        return res.send({ currPrice, currDay, tradable, error })
+        return res.send({ currPrice, currDay, tradable, error });
+    } catch (error) {
+        console.error(error);
+        return res.send({ status: error.message });
+    }
+});
+
+app.get('/data/:ticker', async (req, res) => {
+    const ticker = req.params['ticker'];
+    const { func, interval, outputsize, data_key } = req.body;
+    try {
+        const { data, error } = await getTickerData(ticker, func, interval, outputsize, data_key);
+        return res.send({ data, error });
     } catch (error) {
         console.error(error);
         return res.send({ status: error.message });
