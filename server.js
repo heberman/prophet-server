@@ -78,8 +78,6 @@ async function getTickerPrice(ticker) {
     }
     currDay = times[i];
     currPrice = newData[times[i]]['4. close'];
-    console.log(new Date(yesterdayMS - (10 * 60 * 1000)).toLocaleString());
-    console.log(times[i]);
     tradable = (yesterdayMS - (10 * 60 * 1000)) - new Date(times[i]).getTime() <= 0;
     return { currPrice, currDay, tradable, error };    
 }
@@ -148,6 +146,17 @@ app.post('/trade', async (req, res) => {
         }
         console.log("Ticker currently untradable.");
         return res.send({ status: "Ticker currently untradable."});
+    } catch (error) {
+        console.error(error);
+        return res.send({ status: error.message });
+    }
+});
+
+app.get('/price/:ticker', async (req, res) => {
+    const ticker = req.params['ticker'];
+    try {
+        const { currPrice, currDay, tradable, error } = await getTickerPrice(ticker);
+        return res.send({ currPrice, currDay, tradable, error })
     } catch (error) {
         console.error(error);
         return res.send({ status: error.message });
