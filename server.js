@@ -12,6 +12,7 @@ const { parse } = require("csv-parse");
 const mongoose = require("mongoose");
 const User = mongoose.model("UserInfo");
 var ticker_arr = [];
+var tickers_parsed = false;
 
 mongoose.connect("mongodb+srv://heberman:PeanutButter45@prophet.qqyvn4v.mongodb.net/?retryWrites=true&w=majority",{
     useNewURLParser:true
@@ -28,6 +29,7 @@ fs.createReadStream("./nasdaq_screener.csv")
     ticker_arr = [...ticker_arr, row[0]]
   })
   .on("end", function () {
+    tickers_parsed = true;
     console.log("Finished parsing tickers.");
   })
   .on("error", function (error) {
@@ -134,6 +136,10 @@ async function getPortfolioValue(portfolio) {
 
 app.post('/trade', async (req, res) => {
     console.log("Making random trade...");
+    while (!tickers_parsed) {
+        console.log("Waiting for tickers...");
+        window.setTimeout(1000);
+    }
     const numShares = 1;
     try {
         const trade_ticker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
