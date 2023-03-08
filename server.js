@@ -236,7 +236,6 @@ app.get('/user/:uname', async (req, res) => {
         const foundUser = await getUser(uname);
         if (!foundUser)
             return res.sendStatus(404);
-        cons
         const portVal = await getPortfolioValue(foundUser.portfolio);
         return res.send({ foundUser, portVal });
     } catch (err) {
