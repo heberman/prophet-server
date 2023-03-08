@@ -124,8 +124,7 @@ async function getUser(username) {
 
 async function getPortfolioValue(portfolio) {
     let pval = 0;
-    console.log(Object.keys(portfolio));
-    for (const ticker of Object.keys(portfolio)) {
+    for (const ticker of portfolio.keys()) {
         console.log(ticker);
         const shares = portfolio[ticker];
         const { currPrice } = await getTickerPrice(ticker);
