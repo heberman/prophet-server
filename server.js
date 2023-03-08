@@ -129,6 +129,7 @@ async function getPortfolioValue(portfolio) {
         const { currPrice } = await getTickerPrice(ticker);
         pval += shares * currPrice;
     }
+    console.log(pval);
     return pval;
 }
 
