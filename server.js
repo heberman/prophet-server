@@ -170,7 +170,7 @@ app.post('/data/:ticker', async (req, res) => {
     const { func, interval, outputsize, data_key } = req.body;
     try {
         const { data, error } = await getTickerData(ticker, func, interval, outputsize, data_key);
-        return res.send({ data, error });
+        return res.send({ data });
     } catch (err) {
         console.error(err);
         return res.send({ status: err.message });
