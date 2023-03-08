@@ -119,15 +119,15 @@ async function getUser(username) {
     const foundUser = await User.findOne({ user: username }).exec();
     if (!foundUser)
         return null;
-    return json(foundUser);
+    return foundUser;
 }
 
 async function getPortfolioValue(portfolio) {
     let pval = 0;
     for (const ticker of Object.keys(portfolio)) {
         const shares = portfolio[ticker];
-        const response = await axios.get('/price/' + ticker);
-        pval += shares * response.data.currPrice;
+        const { currPrice } = await getTickerPrice(ticker);
+        pval += shares * currPrice;
     }
     return pval;
 }
