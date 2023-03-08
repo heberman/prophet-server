@@ -34,7 +34,7 @@ fs.createReadStream("./nasdaq_screener.csv")
     console.log(error.message);
   });
 
-  function getDaysAgo(days) {
+function getDaysAgo(days) {
     const now = new Date();
     const timezoneOffset = now.getTimezoneOffset() * 60 * 1000; // Convert timezone offset to milliseconds
     const easternTimezoneOffset = -5 * 60 * 60 * 1000; // Eastern Timezone is UTC-4
@@ -42,7 +42,7 @@ fs.createReadStream("./nasdaq_screener.csv")
     const daysAgo = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000) + timezoneOffset + easternTimezoneOffset);
     
     return daysAgo;
-  }
+}
 
 async function getTickerPrice(ticker) {
     const API_KEY = 'MG0ID5XPDBCTO9FF';
