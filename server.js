@@ -115,6 +115,23 @@ async function getTickerData(ticker, func, interval, outputsize, data_key) {
     return { newData, error }
 }
 
+async function getUser(username) {
+    const foundUser = await User.findOne({ user: username }).exec();
+    if (!foundUser)
+        return null;
+    return json(foundUser);
+}
+
+async function getPortfolioValue(portfolio) {
+    let pval = 0;
+    for (const ticker of Object.keys(portfolio)) {
+        const shares = portfolio[ticker];
+        const response = await axios.get('/price/' + ticker);
+        pval += shares * response.data.currPrice;
+    }
+    return pval;
+}
+
 app.post('/trade', async (req, res) => {
     console.log("Making random trade...");
     const numShares = 1;
@@ -215,9 +232,11 @@ app.post('/auth', async (req, res) => {
 app.get('/user/:uname', async (req, res) => {
     const uname = req.params['uname'];
     try {
-        const foundUser = await User.findOne({ user: uname }).exec();
-        if (!foundUser) return res.sendStatus(401); //Unauthorized
-        return res.json(foundUser);
+        const foundUser = await getUser(uname);
+        if (!foundUser)
+            return res.sendStatus(404);
+        const portVal = await getPortfolioValue(foundUser.portfolio);
+        return res.send({ foundUser, portVal });
     } catch (err) {
         return res.send({ status: err.message });
     }
