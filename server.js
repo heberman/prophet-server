@@ -171,7 +171,6 @@ function makeTrade(user, ticker, numShares, price) {
 app.post('/trade', async (req, res) => {
     waitUntilTrue(tickers_parsed, async () => {
         console.log("Making random trade...");
-        const numShares = 1;
         try {
             const tradeTicker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
             //const trade_ticker = "F";
