@@ -135,7 +135,7 @@ async function getUser(username) {
 }
 
 async function getPortfolioValue(portfolio) {
-    const priceMap = new Map();
+    let priceMap = new Map();
     let portVal = 0;
     for (const ticker of portfolio.keys()) {
         const shares = portfolio.get(ticker);
@@ -143,6 +143,7 @@ async function getPortfolioValue(portfolio) {
         priceMap.set(ticker, currPrice);
         portVal += shares * currPrice;
     }
+    console.log(priceMap);
     return { priceMap, portVal };
 }
 
@@ -277,6 +278,7 @@ app.get('/user/:uname', async (req, res) => {
         if (!foundUser)
             return res.sendStatus(404);
         const { priceMap, portVal } = await getPortfolioValue(foundUser.portfolio);
+        console.log(priceMap);
         return res.send({ foundUser, priceMap, portVal });
     } catch (err) {
         return res.send({ status: err.message });
