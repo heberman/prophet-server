@@ -276,9 +276,20 @@ app.post('/logvals', async (req, res) => {
         const users = await User.find({}).exec();
         if (!users) return res.sendStatus(401);
 
-        console.log(users);
+        for (const user of users) {
+            const { portVal } = await getPortfolioValue(user.portfolio);
+            const totalValue = portVal + user.cash;
+            const entry = { date: Date(), totalValue }
+            let newUser = user;
+            newUser.valueData = [entry, ...newUser.valueData];
+            const foundUser = await User.findOneAndUpdate({ user: user.user }, newUser).exec();
+            if (!foundUser) return res.sendStatus(401);
+        }
+
+        return res.send({ status: "success" });
     } catch (err) {
         console.log(err);
+        return res.sendStatus(401);
     }
 })
 
