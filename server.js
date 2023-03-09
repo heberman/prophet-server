@@ -32,20 +32,22 @@ app.listen(port, () => {
 });
 
 async function parseTickers() {
-    var ticker_arr = [];
+    return new Promise((resolve, reject) => {
+        var ticker_arr = [];
 
-    const readInterface = readline.createInterface({
-        input: fs.createReadStream('tickers.txt'),
-        console: false
-    });
-    
-    readInterface.on('line', function(line) {
-        ticker_arr.push(line);
-    });
-    
-    readInterface.on('close', function() {
-        console.log("Finished parsing tickers.");
-        return ticker_arr;
+        const readInterface = readline.createInterface({
+            input: fs.createReadStream('tickers.txt'),
+            console: false
+        });
+        
+        readInterface.on('line', function(line) {
+            ticker_arr.push(line);
+        });
+        
+        readInterface.on('close', function() {
+            console.log("Finished parsing tickers.");
+            resolve(ticker_arr);
+        });
     });
 }
 
