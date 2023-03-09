@@ -47,8 +47,6 @@ async function parseTickers() {
         console.log("Finished parsing tickers.");
         return ticker_arr;
     });
-
-    return null;
 }
 
 function getDaysAgo(days) {
