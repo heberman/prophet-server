@@ -170,7 +170,7 @@ function makeTrade(user, ticker, numShares, price) {
     } else {
         newUser.portfolio.set(ticker, numShares);
     }
-    newUser.cash -= numShares * currPrice;
+    newUser.cash -= numShares * price;
     return newUser;
 }
 
