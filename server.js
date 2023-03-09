@@ -1,6 +1,6 @@
 // TO DOs
 // 1. Schedule cron event to save each users current portVal for more detialed stats
-// 2. Make randotron sell stocks
+// 2. Make randotron sell stocks: DONE
 // 3. Instead of returning portVal from get/user/uname, return portfolio with the current price included in the value to speed up home screen
 // 4. On stock page, include average price of all bought shares
 // 5. Start with 10,000 instead of 1,000
@@ -20,6 +20,8 @@ const mongoose = require("mongoose");
 const User = mongoose.model("UserInfo");
 var ticker_arr = [];
 var tickers_parsed = false;
+
+mongoose.set('strictQuery', false);
 
 mongoose.connect("mongodb+srv://heberman:PeanutButter45@prophet.qqyvn4v.mongodb.net/?retryWrites=true&w=majority",{
     useNewURLParser:true
@@ -133,13 +135,15 @@ async function getUser(username) {
 }
 
 async function getPortfolioValue(portfolio) {
-    let pval = 0;
+    const priceMap = new Map();
+    let portVal = 0;
     for (const ticker of portfolio.keys()) {
         const shares = portfolio.get(ticker);
         const { currPrice } = await getTickerPrice(ticker);
-        pval += shares * currPrice;
+        priceMap.set(ticker, currPrice);
+        portVal += shares * currPrice;
     }
-    return pval;
+    return { priceMap, portVal };
 }
 
 function waitUntilTrue(variable, callback) {
@@ -272,8 +276,8 @@ app.get('/user/:uname', async (req, res) => {
         const foundUser = await getUser(uname);
         if (!foundUser)
             return res.sendStatus(404);
-        const portVal = await getPortfolioValue(foundUser.portfolio);
-        return res.send({ foundUser, portVal });
+        const { priceMap, portVal } = await getPortfolioValue(foundUser.portfolio);
+        return res.send({ foundUser, priceMap, portVal });
     } catch (err) {
         return res.send({ status: err.message });
     }
