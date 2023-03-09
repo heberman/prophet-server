@@ -1,3 +1,10 @@
+// TO DOs
+// 1. Schedule cron event to save each users current portVal for more detialed stats
+// 2. Make randotron sell stocks
+// 3. Instead of returning portVal from get/user/uname, return portfolio with the current price included in the value to speed up home screen
+// 4. On stock page, include average price of all bought shares
+// 5. Start with 10,000 instead of 1,000
+
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -134,47 +141,55 @@ async function getPortfolioValue(portfolio) {
     return pval;
 }
 
+function waitUntilTrue(variable, callback) {
+    if (variable === true) {
+      callback();
+    } else {
+      setTimeout(() => {
+        waitUntilTrue(variable, callback);
+      }, 100);
+    }
+}
+
 app.post('/trade', async (req, res) => {
-    console.log("Making random trade...");
-    while (!tickers_parsed) {
-        console.log("Waiting for tickers...");
-        window.setTimeout(1000);
-    }
-    const numShares = 1;
-    try {
-        const trade_ticker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
-        //const trade_ticker = "F";
-        console.log(trade_ticker);
-        const { currPrice, tradable, error } = await getTickerPrice(trade_ticker);
+    waitUntilTrue(tickers_parsed, async () => {
+        console.log("Making random trade...");
+        const numShares = 1;
+        try {
+            const trade_ticker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
+            //const trade_ticker = "F";
+            console.log(trade_ticker);
+            const { currPrice, tradable, error } = await getTickerPrice(trade_ticker);
 
-        if (error)
-            throw Error(error);
+            if (error)
+                throw Error(error);
 
-        if (tradable) {
-            const randoUser = await User.findOne({ user: "randotron" }).exec();
-            let newUser = randoUser;
-            const trade = { ticker: trade_ticker, numShares, date: Date(), price: currPrice }
-            console.log(trade);
-            newUser.trades = [trade, ...randoUser.trades];
-            if (newUser.portfolio.has(trade_ticker)) {
-                newUser.portfolio.set(trade_ticker, newUser.portfolio.get(trade_ticker) + numShares);
-                if (newUser.portfolio.get(trade_ticker) <= 0) {
-                    newUser.portfolio.delete(trade_ticker);
+            if (tradable) {
+                const randoUser = await User.findOne({ user: "randotron" }).exec();
+                let newUser = randoUser;
+                const trade = { ticker: trade_ticker, numShares, date: Date(), price: currPrice }
+                console.log(trade);
+                newUser.trades = [trade, ...randoUser.trades];
+                if (newUser.portfolio.has(trade_ticker)) {
+                    newUser.portfolio.set(trade_ticker, newUser.portfolio.get(trade_ticker) + numShares);
+                    if (newUser.portfolio.get(trade_ticker) <= 0) {
+                        newUser.portfolio.delete(trade_ticker);
+                    }
+                } else {
+                    newUser.portfolio.set(trade_ticker, numShares);
                 }
-            } else {
-                newUser.portfolio.set(trade_ticker, numShares);
-            }
-            newUser.cash -= numShares * currPrice;
+                newUser.cash -= numShares * currPrice;
 
-            const oldUser = await User.findOneAndUpdate({ user: "randotron" }, newUser).exec();
-            return res.send({ oldUser, newUser });
+                const oldUser = await User.findOneAndUpdate({ user: "randotron" }, newUser).exec();
+                return res.send({ oldUser, newUser });
+            }
+            console.log("Ticker currently untradable.");
+            return res.send({ status: "Ticker currently untradable."});
+        } catch (error) {
+            console.error(error);
+            return res.send({ status: error.message });
         }
-        console.log("Ticker currently untradable.");
-        return res.send({ status: "Ticker currently untradable."});
-    } catch (error) {
-        console.error(error);
-        return res.send({ status: error.message });
-    }
+    })
 });
 
 app.get('/price/:ticker', async (req, res) => {
