@@ -151,15 +151,32 @@ function waitUntilTrue(variable, callback) {
     }
 }
 
+function makeTrade(user, ticker, numShares, price) {
+    let newUser = user;
+    const trade = { ticker, numShares, date: Date(), price }
+    console.log(trade);
+    newUser.trades = [trade, ...newUser.trades];
+    if (newUser.portfolio.has(tradeTicker)) {
+        newUser.portfolio.set(tradeTicker, newUser.portfolio.get(tradeTicker) + numShares);
+        if (newUser.portfolio.get(tradeTicker) <= 0) {
+            newUser.portfolio.delete(tradeTicker);
+        }
+    } else {
+        newUser.portfolio.set(tradeTicker, numShares);
+    }
+    newUser.cash -= numShares * currPrice;
+    return newUser;
+}
+
 app.post('/trade', async (req, res) => {
     waitUntilTrue(tickers_parsed, async () => {
         console.log("Making random trade...");
         const numShares = 1;
         try {
-            const trade_ticker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
+            const tradeTicker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
             //const trade_ticker = "F";
-            console.log(trade_ticker);
-            const { currPrice, tradable, error } = await getTickerPrice(trade_ticker);
+            console.log(tradeTicker);
+            const { currPrice, tradable, error } = await getTickerPrice(tradeTicker);
 
             if (error)
                 throw Error(error);
@@ -167,18 +184,17 @@ app.post('/trade', async (req, res) => {
             if (tradable) {
                 const randoUser = await User.findOne({ user: "randotron" }).exec();
                 let newUser = randoUser;
-                const trade = { ticker: trade_ticker, numShares, date: Date(), price: currPrice }
-                console.log(trade);
-                newUser.trades = [trade, ...randoUser.trades];
-                if (newUser.portfolio.has(trade_ticker)) {
-                    newUser.portfolio.set(trade_ticker, newUser.portfolio.get(trade_ticker) + numShares);
-                    if (newUser.portfolio.get(trade_ticker) <= 0) {
-                        newUser.portfolio.delete(trade_ticker);
-                    }
-                } else {
-                    newUser.portfolio.set(trade_ticker, numShares);
+
+                if (newUser.portfolio.size >= 10) {
+                    const sellTicker = newUser.portfolio.keys()[Math.floor(Math.random() * newUser.portfolio.size)];
+                    const { currPrice: sellPrice, error: sellError } = await getTickerPrice(sellTicker);
+                    if (sellError)
+                        throw Error(sellError);
+                    const sellShares = newUser.portfolio.get(sellTicker) * -1;
+                    newUser = makeTrade(newUser, sellTicker, sellShares, sellPrice);
                 }
-                newUser.cash -= numShares * currPrice;
+
+                newUser = makeTrade(newUser, tradeTicker, 1, currPrice);
 
                 const oldUser = await User.findOneAndUpdate({ user: "randotron" }, newUser).exec();
                 return res.send({ oldUser, newUser });
