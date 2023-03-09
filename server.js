@@ -1,9 +1,9 @@
 // TO DOs
-// 1. Schedule cron event to save each users current portVal for more detialed stats
+// 1. Schedule cron event to save each users current portVal for more detialed stats: DONE
 // 2. Make randotron sell stocks: DONE
 // 3. Instead of returning portVal from get/user/uname, return portfolio with the current price included in the value to speed up home screen: DONE
 // 4. On stock page, include average price of all bought shares
-// 5. Start with 10,000 instead of 1,000
+// 5. Start with 10,000 instead of 1,000: DONE
 // 6. Logout button
 
 const express = require("express");
@@ -19,8 +19,6 @@ const readline = require('readline');
 
 const mongoose = require("mongoose");
 const User = mongoose.model("UserInfo");
-var ticker_arr = [];
-var tickers_parsed = false;
 
 mongoose.set('strictQuery', false);
 
@@ -33,19 +31,25 @@ app.listen(port, () => {
     console.log("REST API is listening.");
 });
 
-const readInterface = readline.createInterface({
-    input: fs.createReadStream('tickers.txt'),
-    console: false
-});
+async function parseTickers() {
+    var ticker_arr = [];
 
-readInterface.on('line', function(line) {
-    ticker_arr.push(line);
-});
+    const readInterface = readline.createInterface({
+        input: fs.createReadStream('tickers.txt'),
+        console: false
+    });
+    
+    readInterface.on('line', function(line) {
+        ticker_arr.push(line);
+    });
+    
+    readInterface.on('close', function() {
+        console.log("Finished parsing tickers.");
+        return ticker_arr;
+    });
 
-readInterface.on('close', function() {
-    tickers_parsed = true;
-    console.log("Finished parsing tickers.");
-});
+    return null;
+}
 
 function getDaysAgo(days) {
     const now = new Date();
@@ -147,16 +151,6 @@ async function getPortfolioValue(portfolio) {
     return { priceMap, portVal };
 }
 
-function waitUntilTrue(variable, callback) {
-    if (variable === true) {
-      callback();
-    } else {
-      setTimeout(() => {
-        waitUntilTrue(variable, callback);
-      }, 100);
-    }
-}
-
 function makeTrade(user, ticker, numShares, price) {
     let newUser = user;
     const trade = { ticker, numShares, date: Date(), price }
@@ -175,42 +169,43 @@ function makeTrade(user, ticker, numShares, price) {
 }
 
 app.post('/trade', async (req, res) => {
-    waitUntilTrue(tickers_parsed, async () => {
-        console.log("Making random trade...");
-        try {
-            const tradeTicker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
-            //const trade_ticker = "F";
-            console.log(tradeTicker);
-            const { currPrice, tradable, error } = await getTickerPrice(tradeTicker);
+    const ticker_arr = await parseTickers();
 
-            if (error)
-                throw Error(error);
+    console.log("Making random trade...");
+    try {
+        const tradeTicker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
+        //const trade_ticker = "F";
+        console.log(tradeTicker);
+        const { currPrice, tradable, error } = await getTickerPrice(tradeTicker);
 
-            if (tradable) {
-                const randoUser = await User.findOne({ user: "randotron" }).exec();
-                let newUser = randoUser;
+        if (error)
+            throw Error(error);
 
-                if (newUser.portfolio.size >= 10) {
-                    const sellTicker = newUser.portfolio.keys()[Math.floor(Math.random() * newUser.portfolio.size)];
-                    const { currPrice: sellPrice, error: sellError } = await getTickerPrice(sellTicker);
-                    if (sellError)
-                        throw Error(sellError);
-                    const sellShares = newUser.portfolio.get(sellTicker) * -1;
-                    newUser = makeTrade(newUser, sellTicker, sellShares, sellPrice);
-                }
+        if (tradable) {
+            const randoUser = await User.findOne({ user: "randotron" }).exec();
+            let newUser = randoUser;
 
-                newUser = makeTrade(newUser, tradeTicker, 1, currPrice);
-
-                const oldUser = await User.findOneAndUpdate({ user: "randotron" }, newUser).exec();
-                return res.send({ oldUser, newUser });
+            if (newUser.portfolio.size >= 10) {
+                const sellTicker = newUser.portfolio.keys()[Math.floor(Math.random() * newUser.portfolio.size)];
+                const { currPrice: sellPrice, error: sellError } = await getTickerPrice(sellTicker);
+                if (sellError)
+                    throw Error(sellError);
+                const sellShares = newUser.portfolio.get(sellTicker) * -1;
+                newUser = makeTrade(newUser, sellTicker, sellShares, sellPrice);
             }
-            console.log("Ticker currently untradable.");
-            return res.send({ status: "Ticker currently untradable."});
-        } catch (error) {
-            console.error(error);
-            return res.send({ status: error.message });
+
+            newUser = makeTrade(newUser, tradeTicker, 1, currPrice);
+
+            const oldUser = await User.findOneAndUpdate({ user: "randotron" }, newUser).exec();
+            return res.send({ oldUser, newUser });
         }
-    })
+        console.log("Ticker currently untradable.");
+        return res.send({ status: "Ticker currently untradable."});
+    } catch (error) {
+        console.error(error);
+        return res.send({ status: error.message });
+    }
+
 });
 
 app.get('/price/:ticker', async (req, res) => {
