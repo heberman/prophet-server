@@ -162,13 +162,13 @@ function makeTrade(user, ticker, numShares, price) {
     const trade = { ticker, numShares, date: Date(), price }
     console.log(trade);
     newUser.trades = [trade, ...newUser.trades];
-    if (newUser.portfolio.has(tradeTicker)) {
-        newUser.portfolio.set(tradeTicker, newUser.portfolio.get(tradeTicker) + numShares);
-        if (newUser.portfolio.get(tradeTicker) <= 0) {
-            newUser.portfolio.delete(tradeTicker);
+    if (newUser.portfolio.has(ticker)) {
+        newUser.portfolio.set(ticker, newUser.portfolio.get(ticker) + numShares);
+        if (newUser.portfolio.get(ticker) <= 0) {
+            newUser.portfolio.delete(ticker);
         }
     } else {
-        newUser.portfolio.set(tradeTicker, numShares);
+        newUser.portfolio.set(ticker, numShares);
     }
     newUser.cash -= numShares * currPrice;
     return newUser;
