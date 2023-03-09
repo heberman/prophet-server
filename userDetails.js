@@ -10,7 +10,8 @@ const UserDetailsSchema = new mongoose.Schema(
             type: Map,
             of: Number
         },
-        trades: [{ ticker: String, numShares: Number, date: Date, price: Number }]
+        trades: [{ ticker: String, numShares: Number, date: Date, price: Number }],
+        valueData: [{date: Date, totalValue: Number }]
     },
     {
         collection: "UserInfo",

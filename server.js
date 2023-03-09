@@ -1,7 +1,7 @@
 // TO DOs
 // 1. Schedule cron event to save each users current portVal for more detialed stats
 // 2. Make randotron sell stocks: DONE
-// 3. Instead of returning portVal from get/user/uname, return portfolio with the current price included in the value to speed up home screen
+// 3. Instead of returning portVal from get/user/uname, return portfolio with the current price included in the value to speed up home screen: DONE
 // 4. On stock page, include average price of all bought shares
 // 5. Start with 10,000 instead of 1,000
 
@@ -248,7 +248,7 @@ app.post('/register', async (req, res) => {
         const newUser = await User.create({
             user,
             pwd,
-            cash: 1000.00,
+            cash: 10000.00,
             portfolio: new Map(),
             trades: []
         });
