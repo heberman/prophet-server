@@ -271,6 +271,17 @@ app.post('/auth', async (req, res) => {
     return res.json({ foundUser });
 });
 
+app.post('/logvals', async (req, res) => {
+    try {
+        const users = await User.find({}).exec();
+        if (!users) return res.sendStatus(401);
+
+        console.log(users);
+    } catch (err) {
+        console.log(err);
+    }
+})
+
 app.get('/user/:uname', async (req, res) => {
     const uname = req.params['uname'];
     try {
