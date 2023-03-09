@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 require("./userDetails");
 const fs = require("fs");
-const { parse } = require("csv-parse");
+const readline = require('readline');
 
 const mongoose = require("mongoose");
 const User = mongoose.model("UserInfo");
@@ -30,18 +30,19 @@ app.listen(port, () => {
     console.log("REST API is listening.");
 });
 
-fs.createReadStream("./nasdaq_screener.csv")
-  .pipe(parse({ delimiter: ",", from_line: 2 }))
-  .on("data", function (row) {
-    ticker_arr = [...ticker_arr, row[0]]
-  })
-  .on("end", function () {
+const readInterface = readline.createInterface({
+    input: fs.createReadStream('tickers.txt'),
+    console: false
+});
+
+readInterface.on('line', function(line) {
+    ticker_arr.push(line);
+});
+
+readInterface.on('close', function() {
     tickers_parsed = true;
     console.log("Finished parsing tickers.");
-  })
-  .on("error", function (error) {
-    console.log(error.message);
-  });
+});
 
 function getDaysAgo(days) {
     const now = new Date();
