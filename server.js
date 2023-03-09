@@ -277,7 +277,6 @@ app.get('/user/:uname', async (req, res) => {
         if (!foundUser)
             return res.sendStatus(404);
         const { priceMap, portVal } = await getPortfolioValue(foundUser.portfolio);
-        console.log(priceMap);
         return res.send({ foundUser, priceMap, portVal });
     } catch (err) {
         return res.send({ status: err.message });
