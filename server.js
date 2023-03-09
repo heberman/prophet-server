@@ -4,6 +4,7 @@
 // 3. Instead of returning portVal from get/user/uname, return portfolio with the current price included in the value to speed up home screen: DONE
 // 4. On stock page, include average price of all bought shares
 // 5. Start with 10,000 instead of 1,000
+// 6. Logout button
 
 const express = require("express");
 const app = express();
