@@ -186,9 +186,7 @@ app.post('/trade', async (req, res) => {
             let newUser = randoUser;
 
             if (newUser.portfolio.size >= 10) {
-                console.log(newUser.portfolio.keys());
-                console.log(newUser.portfolio.keys()[Math.floor(Math.random() * newUser.portfolio.size)]);
-                const sellTicker = newUser.portfolio.keys()[Math.floor(Math.random() * newUser.portfolio.size)];
+                const sellTicker = Array.from(newUser.portfolio.keys())[Math.floor(Math.random() * newUser.portfolio.size)];
                 const { currPrice: sellPrice, error: sellError } = await getTickerPrice(sellTicker);
                 if (sellError)
                     throw Error(sellError);
