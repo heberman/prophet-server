@@ -2,7 +2,7 @@
 // 1. Schedule cron event to save each users current portVal for more detialed stats: DONE
 // 2. Make randotron sell stocks: DONE
 // 3. Instead of returning portVal from get/user/uname, return portfolio with the current price included in the value to speed up home screen: DONE
-// 4. On stock page, include average price of all bought shares
+// 4. On stock page, include average price of all bought shares: DONE
 // 5. Start with 10,000 instead of 1,000: DONE
 // 6. Logout button
 
@@ -186,6 +186,8 @@ app.post('/trade', async (req, res) => {
             let newUser = randoUser;
 
             if (newUser.portfolio.size >= 10) {
+                console.log(newUser.portfolio.keys());
+                console.log(newUser.portfolio.keys()[Math.floor(Math.random() * newUser.portfolio.size)]);
                 const sellTicker = newUser.portfolio.keys()[Math.floor(Math.random() * newUser.portfolio.size)];
                 const { currPrice: sellPrice, error: sellError } = await getTickerPrice(sellTicker);
                 if (sellError)
