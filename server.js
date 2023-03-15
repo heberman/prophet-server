@@ -22,14 +22,15 @@ const User = mongoose.model("UserInfo");
 
 mongoose.set('strictQuery', false);
 
-mongoose.connect("mongodb+srv://heberman:PeanutButter45@prophet.qqyvn4v.mongodb.net/?retryWrites=true&w=majority",{
-    useNewURLParser:true
-}).then(() => {console.log("Connected to database");})
-.catch(err => console.log(err));
- 
-app.listen(port, () => {
-    console.log("REST API is listening.");
-});
+const connectDB = async () => {
+    try {
+      const conn = await mongoose.connect("mongodb+srv://heberman:PeanutButter45@prophet.qqyvn4v.mongodb.net/?retryWrites=true&w=majority");
+      console.log(`MongoDB Connected: ${conn.connection.host}`);
+    } catch (error) {
+      console.log(error);
+      process.exit(1);
+    }
+}
 
 async function parseTickers() {
     return new Promise((resolve, reject) => {
@@ -311,4 +312,10 @@ app.put('/user/:uname', async (req, res) => {
     } catch (err) {
         return res.send({ status: err.message });
     }
+});
+
+connectDB().then(() => {
+    app.listen(port, () => {
+        console.log("listening for requests");
+    })
 });
