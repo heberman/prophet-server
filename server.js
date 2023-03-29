@@ -4,21 +4,23 @@
 // 3. Instead of returning portVal from get/user/uname, return portfolio with the current price included in the value to speed up home screen: DONE
 // 4. On stock page, include average price of all bought shares: DONE
 // 5. Start with 10,000 instead of 1,000: DONE
-// 6. Logout button
+// 6. Logout button: DONE
+// 7. Change key value for stats graph to make the times scale correctly
+
+require("dotenv").config();
+require("./userDetails");
 
 const express = require("express");
-const app = express();
 const cors = require("cors");
-require("dotenv").config();
-const port = process.env.PORT || 5000;
-app.use(cors());
-app.use(express.json());
-require("./userDetails");
 const fs = require("fs");
 const readline = require('readline');
-
 const mongoose = require("mongoose");
 const User = mongoose.model("UserInfo");
+const port = process.env.PORT || 5000;
+
+const app = express();
+app.use(cors());
+app.use(express.json());
 
 mongoose.set('strictQuery', false);
 
@@ -268,10 +270,13 @@ app.post('/auth', async (req, res) => {
 });
 
 app.post('/logvals', async (req, res) => {
+    console.log("Logging portfolio values...");
     try {
+        console.log("Getting users...");
         const users = await User.find({}).exec();
         if (!users) return res.sendStatus(401);
 
+        console.log("Updating users' value data...");
         for (const user of users) {
             const { portVal } = await getPortfolioValue(user.portfolio);
             const totalValue = portVal + user.cash;
@@ -282,6 +287,7 @@ app.post('/logvals', async (req, res) => {
             if (!foundUser) return res.sendStatus(401);
         }
 
+        console.log("Success.");
         return res.send({ status: "success" });
     } catch (err) {
         console.log(err);
