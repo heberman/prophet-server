@@ -278,10 +278,10 @@ async function updateUserValueData(user) {
         newUser.valueData = [entry, ...newUser.valueData];
         const foundUser = await User.findOneAndUpdate({ user: user.user }, newUser).exec();
         if (!foundUser) return res.sendStatus(401);
-        return res.send({ status: "success" });
+        return { status: "success" };
     } catch (err) {
         console.log(err);
-        return res.sendStatus(401);
+        return err;
     }
 }
 
