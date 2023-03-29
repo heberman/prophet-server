@@ -154,6 +154,22 @@ async function getPortfolioValue(portfolio) {
     return { priceMap, portVal };
 }
 
+async function updateUserValueData(user) {
+    try {
+        const { portVal } = await getPortfolioValue(user.portfolio);
+        const totalValue = portVal + user.cash;
+        const entry = { date: Date(), totalValue }
+        let newUser = user;
+        newUser.valueData = [entry, ...newUser.valueData];
+        const foundUser = await User.findOneAndUpdate({ user: user.user }, newUser).exec();
+        if (!foundUser) return res.sendStatus(401);
+        return { status: "success" };
+    } catch (err) {
+        console.log(err);
+        return err;
+    }
+}
+
 function makeTrade(user, ticker, numShares, price) {
     let newUser = user;
     const trade = { ticker, numShares, date: Date(), price }
@@ -268,22 +284,6 @@ app.post('/auth', async (req, res) => {
 
     return res.json({ foundUser });
 });
-
-async function updateUserValueData(user) {
-    try {
-        const { portVal } = await getPortfolioValue(user.portfolio);
-        const totalValue = portVal + user.cash;
-        const entry = { date: Date(), totalValue }
-        let newUser = user;
-        newUser.valueData = [entry, ...newUser.valueData];
-        const foundUser = await User.findOneAndUpdate({ user: user.user }, newUser).exec();
-        if (!foundUser) return res.sendStatus(401);
-        return { status: "success" };
-    } catch (err) {
-        console.log(err);
-        return err;
-    }
-}
 
 app.post('/logvals', async (req, res) => {
     console.log("Logging portfolio values...");
