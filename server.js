@@ -187,6 +187,12 @@ function makeTrade(user, ticker, numShares, price) {
     return newUser;
 }
 
+app.get('/test', async (req, res) => {
+    const yesterdayMS = getDaysAgo(1) % (60 * 60 * 1000);
+    console.log(yesterdayMS.toLocaleString());
+    return res.send({status: "success"})
+});
+
 app.post('/trade', async (req, res) => {
     const ticker_arr = await parseTickers();
 
