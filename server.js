@@ -189,7 +189,8 @@ function makeTrade(user, ticker, numShares, price) {
 
 app.get('/test', async (req, res) => {
     const yesterday = new Date(getDaysAgo(1));
-    console.log(yesterday.setHours(8, 0, 0));
+    yesterday.setHours(8, 0, 0);
+    console.log(yesterday.toLocaleString());
     return res.send({status: "success"});
 });
 
