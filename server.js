@@ -57,7 +57,7 @@ async function parseTickers() {
 function getDaysAgo(days) {
     const now = new Date();
     const timezoneOffset = now.getTimezoneOffset() * 60 * 1000; // Convert timezone offset to milliseconds
-    const easternTimezoneOffset = -5 * 60 * 60 * 1000; // Eastern Timezone is UTC-4
+    const easternTimezoneOffset = -4 * 60 * 60 * 1000; // Eastern Timezone is UTC-4
     
     const daysAgo = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000) + timezoneOffset + easternTimezoneOffset);
     
