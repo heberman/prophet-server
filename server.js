@@ -332,6 +332,7 @@ app.put('/user/:uname', async (req, res) => {
     const uname = req.params['uname'];
     try {
         const newUser = req.body;
+        console.log(newUser);
         const foundUser = await User.findOneAndUpdate({ user: uname }, newUser).exec();
         if (!foundUser) return res.sendStatus(401); //Unauthorized
         return res.send({ status: "success" })
