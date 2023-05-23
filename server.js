@@ -156,7 +156,7 @@ async function getTickerMacd(ticker) {
         const data = await res.json();
         if (data['Error Message'])
             throw Error("Ticker '" + ticker + "' does not exist.");
-        const newData = data['Time Series (1min)'];
+        const newData = data["Technical Analysis: MACD"];
         const yesterdayMS = getDaysAgo(1);
         const times = Object.keys(newData);
         
@@ -167,6 +167,8 @@ async function getTickerMacd(ticker) {
                 throw Error("Loop went wrong.");
             }
         }
+        console.log(times[i+1]);
+        console.log(times[i]);
         prevMacd = newData[times[i+1]]['MACD'];
         currMacd = newData[times[i]]['MACD'];
     } catch (err) {
