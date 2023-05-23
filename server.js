@@ -167,8 +167,6 @@ async function getTickerMacd(ticker) {
                 throw Error("Loop went wrong.");
             }
         }
-        console.log(times[i+1]);
-        console.log(times[i]);
         prevMacd = newData[times[i+1]]['MACD'];
         currMacd = newData[times[i]]['MACD'];
     } catch (err) {
