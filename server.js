@@ -135,6 +135,47 @@ async function getTickerData(ticker, func, interval, outputsize, data_key) {
     return { newData, error }
 }
 
+async function getTickerMacd(ticker) {
+    const API_KEY = 'MG0ID5XPDBCTO9FF';
+    const api_call = 'https://www.alphavantage.co/query?' 
+                    + 'function=MACD'
+                    + '&symbol=' + ticker
+                    + '&interval=1min'
+                    + '&series_type=open'
+                    + '&apikey=' + API_KEY;
+
+    var prevMacd = null;
+    var currMacd = null;
+    var error = null;
+
+    try {
+        const res = await fetch(api_call);
+        if (!res.ok) {
+            throw Error('could not fetch the data for that resource');
+        }
+        const data = await res.json();
+        if (data['Error Message'])
+            throw Error("Ticker '" + ticker + "' does not exist.");
+        const newData = data['Time Series (1min)'];
+        const yesterdayMS = getDaysAgo(1);
+        const times = Object.keys(newData);
+        
+        let i = 0;
+        while (yesterdayMS - new Date(times[i]).getTime() < 0) {
+            i++;
+            if (i >= times.length) {
+                throw Error("Loop went wrong.");
+            }
+        }
+        prevMacd = newData[times[i+1]]['MACD'];
+        currMacd = newData[times[i]]['MACD'];
+    } catch (err) {
+        error = err.message;
+        console.log(err);
+    }
+    return { prevMacd, currMacd, error }; 
+}
+
 async function getUser(username) {
     const foundUser = await User.findOne({ user: username }).exec();
     if (!foundUser)
@@ -239,6 +280,17 @@ app.get('/price/:ticker', async (req, res) => {
     try {
         const { currPrice, currDay, tradable, error } = await getTickerPrice(ticker);
         return res.send({ currPrice, currDay, tradable, error });
+    } catch (error) {
+        console.error(error);
+        return res.send({ status: error.message });
+    }
+});
+
+app.get('/macd/:ticker', async (req, res) => {
+    const ticker = req.params['ticker'];
+    try {
+        const { prevMacd, currMacd, error } = await getTickerMacd(ticker);
+        return res.send({ prevMacd, currMacd, error });
     } catch (error) {
         console.error(error);
         return res.send({ status: error.message });
