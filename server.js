@@ -176,6 +176,63 @@ async function getTickerMacd(ticker) {
     return { prevMacd, currMacd, error }; 
 }
 
+async function getTickerSma(ticker) {
+    const API_KEY = 'MG0ID5XPDBCTO9FF';
+    const five_api_call = 'https://www.alphavantage.co/query?' 
+                    + 'function=SMA'
+                    + '&symbol=' + ticker
+                    + '&interval=1min'
+                    + '&time=period=5'
+                    + '&series_type=open'
+                    + '&apikey=' + API_KEY;
+    const thirteen_api_call = 'https://www.alphavantage.co/query?' 
+                    + 'function=SMA'
+                    + '&symbol=' + ticker
+                    + '&interval=1min'
+                    + '&time=period=13'
+                    + '&series_type=open'
+                    + '&apikey=' + API_KEY;
+
+    var fiveBarSma = null;
+    var thirteenBarSma = null;
+    var error = null;
+
+    try {
+        const five_res = await fetch(five_api_call);
+        if (!five_res.ok) {
+            throw Error('could not fetch the data for that resource');
+        }
+        const five_data = await res.json();
+        if (five_data['Error Message'])
+            throw Error("Ticker '" + ticker + "' does not exist.");
+        const thirteen_res = await fetch(thirteen_api_call);
+        if (!thirteen_res.ok) {
+            throw Error('could not fetch the data for that resource');
+        }
+        const thirteen_data = await res.json();
+        if (thirteen_data['Error Message'])
+            throw Error("Ticker '" + ticker + "' does not exist.");
+        const five_sma_data = five_data["Technical Analysis: SMA"];
+        const thirteen_sma_data = thirteen_data["Technical Analysis: SMA"];
+        const yesterdayMS = getDaysAgo(1);
+        const times = Object.keys(five_sma_data);
+        
+        let i = 0;
+        while (yesterdayMS - new Date(times[i]).getTime() < 0) {
+            i++;
+            if (i >= times.length) {
+                throw Error("Loop went wrong.");
+            }
+        }
+        fiveBarSma = fiveBarSma[times[i]]['SMA'];
+        thirteenBarSma = thirteenBarSma[times[i]]['SMA'];
+    } catch (err) {
+        error = err.message;
+        console.log(err);
+    }
+    return { fiveBarSma, thirteenBarSma, error }; 
+}
+
 async function getUser(username) {
     const foundUser = await User.findOne({ user: username }).exec();
     if (!foundUser)
@@ -297,6 +354,17 @@ app.get('/macd/:ticker', async (req, res) => {
     }
 });
 
+app.get('/sma/:ticker', async (req, res) => {
+    const ticker = req.params['ticker'];
+    try {
+        const { fiveBarSma, thirtennBarSma, error } = await getTickerSma(ticker);
+        return res.send({ fiveBarSma, thirtennBarSma, error });
+    } catch (error) {
+        console.error(error);
+        return res.send({ status: error.message });
+    }
+});
+
 app.post('/data/:ticker', async (req, res) => {
     const ticker = req.params['ticker'];
     const { func, interval, outputsize, data_key } = req.body;
@@ -308,6 +376,7 @@ app.post('/data/:ticker', async (req, res) => {
         return res.send({ status: err.message });
     }
 });
+
 
 app.post('/register', async (req, res) => {
     const { user, pwd } = req.body;
