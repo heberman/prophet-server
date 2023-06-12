@@ -25,26 +25,6 @@ const connectDB = async () => {
     }
 }
 
-async function parseTickers() {
-    return new Promise((resolve, reject) => {
-        var ticker_arr = [];
-
-        const readInterface = readline.createInterface({
-            input: fs.createReadStream('tickers.txt'),
-            console: false
-        });
-        
-        readInterface.on('line', function(line) {
-            ticker_arr.push(line);
-        });
-        
-        readInterface.on('close', function() {
-            console.log("Finished parsing tickers.");
-            resolve(ticker_arr);
-        });
-    });
-}
-
 function getDaysAgo(days) {
     const now = new Date();
     const timezoneOffset = now.getTimezoneOffset() * 60 * 1000; // Convert timezone offset to milliseconds
