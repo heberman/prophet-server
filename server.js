@@ -1,12 +1,3 @@
-// TO DOs
-// 1. Schedule cron event to save each users current portVal for more detialed stats: DONE
-// 2. Make randotron sell stocks: DONE
-// 3. Instead of returning portVal from get/user/uname, return portfolio with the current price included in the value to speed up home screen: DONE
-// 4. On stock page, include average price of all bought shares: DONE
-// 5. Start with 10,000 instead of 1,000: DONE
-// 6. Logout button: DONE
-// 7. Change key value for stats graph to make the times scale correctly
-
 require("dotenv").config();
 require("./userDetails");
 
@@ -267,70 +258,6 @@ async function updateUserValueData(user) {
         return err;
     }
 }
-
-function makeTrade(user, ticker, numShares, price) {
-    let newUser = user;
-    const trade = { ticker, numShares, date: Date(), price }
-    console.log(trade);
-    newUser.trades = [trade, ...newUser.trades];
-    if (newUser.portfolio.has(ticker)) {
-        newUser.portfolio.set(ticker, newUser.portfolio.get(ticker) + numShares);
-        if (newUser.portfolio.get(ticker) <= 0) {
-            newUser.portfolio.delete(ticker);
-        }
-    } else {
-        newUser.portfolio.set(ticker, numShares);
-    }
-    newUser.cash -= numShares * price;
-    return newUser;
-}
-
-app.get('/test', async (req, res) => {
-    const yesterday = new Date(getDaysAgo(1));
-    yesterday.setHours(12, 30, 0);
-    console.log(yesterday.toLocaleString());
-    return res.send({status: "success"});
-});
-
-app.post('/trade', async (req, res) => {
-    const ticker_arr = await parseTickers();
-
-    console.log("Making random trade...");
-    try {
-        const tradeTicker = ticker_arr[Math.floor(Math.random() * ticker_arr.length)];
-        //const trade_ticker = "F";
-        console.log(tradeTicker);
-        const { currPrice, tradable, error } = await getTickerPrice(tradeTicker);
-
-        if (error)
-            throw Error(error);
-
-        if (tradable) {
-            const randoUser = await User.findOne({ user: "randotron" }).exec();
-            let newUser = randoUser;
-
-            if (newUser.portfolio.size >= 10) {
-                const sellTicker = Array.from(newUser.portfolio.keys())[Math.floor(Math.random() * newUser.portfolio.size)];
-                const { currPrice: sellPrice, error: sellError } = await getTickerPrice(sellTicker);
-                if (sellError)
-                    throw Error(sellError);
-                const sellShares = newUser.portfolio.get(sellTicker) * -1;
-                newUser = makeTrade(newUser, sellTicker, sellShares, sellPrice);
-            }
-
-            newUser = makeTrade(newUser, tradeTicker, 1, currPrice);
-
-            const oldUser = await User.findOneAndUpdate({ user: "randotron" }, newUser).exec();
-            return res.send({ oldUser, newUser });
-        }
-        console.log("Ticker currently untradable.");
-        return res.send({ status: "Ticker currently untradable."});
-    } catch (error) {
-        console.error(error);
-        return res.send({ status: error.message });
-    }
-
-});
 
 app.get('/price/:ticker', async (req, res) => {
     const ticker = req.params['ticker'];
