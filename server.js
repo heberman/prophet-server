@@ -195,8 +195,8 @@ async function getTickerSma(ticker) {
                 throw Error("Loop went wrong.");
             }
         }
-        fiveBarSma = fiveBarSma[times[i]]['SMA'];
-        thirteenBarSma = thirteenBarSma[times[i]]['SMA'];
+        fiveBarSma = five_sma_data[times[i]]['SMA'];
+        thirteenBarSma = thirteen_sma_data[times[i]]['SMA'];
     } catch (err) {
         error = err.message;
         console.log(err);
