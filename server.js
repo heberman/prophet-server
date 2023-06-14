@@ -173,14 +173,14 @@ async function getTickerSma(ticker) {
         if (!five_res.ok) {
             throw Error('could not fetch the data for that resource');
         }
-        const five_data = await res.json();
+        const five_data = await five_res.json();
         if (five_data['Error Message'])
             throw Error("Ticker '" + ticker + "' does not exist.");
         const thirteen_res = await fetch(thirteen_api_call);
         if (!thirteen_res.ok) {
             throw Error('could not fetch the data for that resource');
         }
-        const thirteen_data = await res.json();
+        const thirteen_data = await thirteen_res.json();
         if (thirteen_data['Error Message'])
             throw Error("Ticker '" + ticker + "' does not exist.");
         const five_sma_data = five_data["Technical Analysis: SMA"];
