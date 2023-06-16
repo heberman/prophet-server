@@ -153,14 +153,14 @@ async function getTickerSma(ticker) {
                     + 'function=SMA'
                     + '&symbol=' + ticker
                     + '&interval=1min'
-                    + '&time=period=5'
+                    + '&time_period=5'
                     + '&series_type=open'
                     + '&apikey=' + API_KEY;
     const thirteen_api_call = 'https://www.alphavantage.co/query?' 
                     + 'function=SMA'
                     + '&symbol=' + ticker
                     + '&interval=1min'
-                    + '&time=period=13'
+                    + '&time_period=13'
                     + '&series_type=open'
                     + '&apikey=' + API_KEY;
 
