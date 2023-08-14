@@ -225,13 +225,15 @@ async function getPortfolioValue(portfolio) {
 
 async function updateUserValueData(user) {
     try {
-        const { portVal } = await getPortfolioValue(user.portfolio);
-        const totalValue = portVal + user.cash;
-        const entry = { date: Date(), totalValue }
-        let newUser = user;
-        newUser.valueData = [entry, ...newUser.valueData];
-        const foundUser = await User.findOneAndUpdate({ user: user.user }, newUser).exec();
-        if (!foundUser) return res.sendStatus(401);
+        if (user.trades.length > 0) {
+            const { portVal } = await getPortfolioValue(user.portfolio);
+            const totalValue = portVal + user.cash;
+            const entry = { date: Date(), totalValue }
+            let newUser = user;
+            newUser.valueData = [entry, ...newUser.valueData];
+            const foundUser = await User.findOneAndUpdate({ user: user.user }, newUser).exec();
+            if (!foundUser) return res.sendStatus(401);
+        }
         return { status: "success" };
     } catch (err) {
         console.log(err);
