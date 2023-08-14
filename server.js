@@ -264,14 +264,16 @@ async function makeTrade(user, trade) {
 }
 
 async function buyRandomStock(user) {
+    let tickers;
     fetch('tickers.txt')
         .then(response => response.text())
         .then(data => {
-            const tickers = data.trim().split('\n');
-            console.log(lines);
+            tickers = data.trim().split('\n');
+            console.log(tickers);
         })
         .catch(error => {
             console.error('Error fetching file:', error);
+            return null;
         });
 
     var tickerTradable = false;
@@ -283,9 +285,25 @@ async function buyRandomStock(user) {
         randomTickerPrice = currPrice;
         tickerTradable = error != null || !tradable;
     }
-    const buyShares = (user.cash / 8) / randomTickerPrice;
+    const buyShares = Math.floor((user.cash / 8) / randomTickerPrice);
     const trade = { ticker: randomTicker, numShares: buyShares, date: Date(), price: randomTickerPrice };
     const newUser = makeTrade(user, trade);
+    return newUser;
+}
+
+async function sellRandomStockCheck(user, sellAll) {
+    let newUser = user;
+    let rand = 0.0;
+    for (const ticker of user.portfolio.keys()) {
+        if (!sellAll)
+            rand = Math.random();
+        if (rand < 0.2) {
+            const { currPrice } = await getTickerPrice(ticker);
+            const shares = user.portfolio.get(ticker);
+            const trade = { ticker, numShares: shares, date: Date(), price: currPrice };
+            newUser = makeTrade(user, trade);
+        }
+    }
     return newUser;
 }
 
@@ -426,6 +444,38 @@ app.post('/randombuy', async (req, res) => {
         if (!foundUser)
             return res.sendStatus(404);
         const newUser = buyRandomStock(foundUser);
+        const updatedUser = await updateUser("randotron", newUser);
+        if (!updatedUser) return res.sendStatus(401); //Unauthorized
+        console.log("Randotron: success.");
+        return res.send({ status: "success" })
+    } catch (err) {
+        return res.send({ status: err.message });
+    }
+});
+
+app.post('/randomsell', async (req, res) => {
+    console.log("Randotron: possibly selling random stock...");
+    try {
+        const foundUser = await getUser("randotron");
+        if (!foundUser)
+            return res.sendStatus(404);
+        const newUser = sellRandomStockCheck(foundUser, false);
+        const updatedUser = await updateUser("randotron", newUser);
+        if (!updatedUser) return res.sendStatus(401); //Unauthorized
+        console.log("Randotron: success.");
+        return res.send({ status: "success" })
+    } catch (err) {
+        return res.send({ status: err.message });
+    }
+});
+
+app.post('/sellall', async (req, res) => {
+    console.log("Randotron: selling rest of stocks...");
+    try {
+        const foundUser = await getUser("randotron");
+        if (!foundUser)
+            return res.sendStatus(404);
+        const newUser = sellRandomStockCheck(foundUser, true);
         const updatedUser = await updateUser("randotron", newUser);
         if (!updatedUser) return res.sendStatus(401); //Unauthorized
         console.log("Randotron: success.");
