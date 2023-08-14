@@ -3,8 +3,6 @@ require("./userDetails");
 
 const express = require("express");
 const cors = require("cors");
-const fs = require("fs");
-const readline = require('readline');
 const mongoose = require("mongoose");
 const User = mongoose.model("UserInfo");
 const port = process.env.PORT || 5000;
@@ -211,6 +209,13 @@ async function getUser(username) {
     return foundUser;
 }
 
+async function updateUser(username, newUser) {
+    const foundUser = await User.findOneAndUpdate({ user: username }, newUser).exec();
+    if (!foundUser)
+        return null;
+    return foundUser;
+}
+
 async function getPortfolioValue(portfolio) {
     let priceMap = {};
     let portVal = 0;
@@ -231,14 +236,57 @@ async function updateUserValueData(user) {
             const entry = { date: Date(), totalValue }
             let newUser = user;
             newUser.valueData = [entry, ...newUser.valueData];
-            const foundUser = await User.findOneAndUpdate({ user: user.user }, newUser).exec();
-            if (!foundUser) return res.sendStatus(401);
+            const foundUser = await updateUser(user.user, newUser);
+            if (!foundUser) return { status: "User not found" };
         }
         return { status: "success" };
     } catch (err) {
         console.log(err);
         return err;
     }
+}
+
+async function makeTrade(user, trade) {
+    let newUser = user;
+    const { ticker, numShares, price } = trade;
+    newUser.trades = [trade, ...newUser.trades];
+    if (newUser.portfolio[ticker]) {
+        newUser.portfolio[ticker] += num_shares;
+        if (newUser.portfolio[ticker] <= 0) {
+            delete newUser.portfolio[ticker];
+        }
+    } else {
+        newUser.portfolio[ticker] = numShares;
+    }
+    newUser.cash -= numShares * price;
+    return newUser;
+
+}
+
+async function buyRandomStock(user) {
+    fetch('tickers.txt')
+        .then(response => response.text())
+        .then(data => {
+            const tickers = data.trim().split('\n');
+            console.log(lines);
+        })
+        .catch(error => {
+            console.error('Error fetching file:', error);
+        });
+
+    var tickerTradable = false;
+    let randomTicker;
+    let randomTickerPrice;
+    while (!tickerTradable) {
+        randomTicker = tickers[Math.floor(Math.random * tickers.length)];
+        const { currPrice, tradable, error } = await getTickerPrice(randomTicker);
+        randomTickerPrice = currPrice;
+        tickerTradable = error != null || !tradable;
+    }
+    const buyShares = (user.cash / 8) / randomTickerPrice;
+    const trade = { ticker: randomTicker, numShares: buyShares, date: Date(), price: randomTickerPrice };
+    const newUser = makeTrade(user, trade);
+    return newUser;
 }
 
 app.get('/price/:ticker', async (req, res) => {
@@ -361,9 +409,26 @@ app.get('/user/:uname', async (req, res) => {
 app.put('/user/:uname', async (req, res) => {
     const uname = req.params['uname'];
     try {
-        const newUser = req.body;
-        const foundUser = await User.findOneAndUpdate({ user: uname }, newUser).exec();
+        const { userData, trade } = req.body;
+        const newUser = makeTrade(userData, trade);
+        const foundUser = await updateUser(uname, newUser);
         if (!foundUser) return res.sendStatus(401); //Unauthorized
+        return res.send({ status: "success" })
+    } catch (err) {
+        return res.send({ status: err.message });
+    }
+});
+
+app.post('/randombuy', async (req, res) => {
+    console.log("Randotron: buying random stock...");
+    try {
+        const foundUser = await getUser("randotron");
+        if (!foundUser)
+            return res.sendStatus(404);
+        const newUser = buyRandomStock(foundUser);
+        const updatedUser = await updateUser("randotron", newUser);
+        if (!updatedUser) return res.sendStatus(401); //Unauthorized
+        console.log("Randotron: success.");
         return res.send({ status: "success" })
     } catch (err) {
         return res.send({ status: err.message });
