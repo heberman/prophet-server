@@ -253,8 +253,8 @@ async function updateUserValueData(user) {
     }
 }
 
-async function makeTrade(user, trade) {
-    const newUser = { ...user };
+function makeTrade(user, trade) {
+    let newUser = user;
     const { ticker, numShares, price } = trade;
     newUser.trades = [trade, ...newUser.trades];
     if (newUser.portfolio[ticker]) {
@@ -433,7 +433,6 @@ app.put('/user/:uname', async (req, res) => {
     try {
         const { userData, trade } = req.body;
         const newUser = makeTrade(userData, trade);
-        console.log(newUser);
         const foundUser = await updateUser(uname, newUser);
         if (!foundUser) return res.sendStatus(401); //Unauthorized
         return res.send({ status: "success" })
