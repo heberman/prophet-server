@@ -3,6 +3,7 @@ require("./userDetails");
 
 const express = require("express");
 const cors = require("cors");
+const fs = require('fs');
 const mongoose = require("mongoose");
 const User = mongoose.model("UserInfo");
 const port = process.env.PORT || 5000;
@@ -265,16 +266,14 @@ async function makeTrade(user, trade) {
 
 async function buyRandomStock(user) {
     let tickers;
-    fetch('tickers.txt')
-        .then(response => response.text())
-        .then(data => {
-            tickers = data.trim().split('\n');
-            console.log(tickers);
-        })
-        .catch(error => {
-            console.error('Error fetching file:', error);
+    fs.readFile('tickers.txt', 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading file:', err);
             return null;
-        });
+        }
+      
+        tickers = data.trim().split('\n');
+    });
 
     var tickerTradable = false;
     let randomTicker;
