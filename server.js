@@ -211,11 +211,18 @@ async function getUser(username) {
 }
 
 async function updateUser(username, newUser) {
-    const foundUser = await User.findOneAndUpdate({ user: username }, newUser).exec();
-    if (!foundUser)
+    try {
+        const foundUser = await User.findOneAndUpdate({ user: username }, newUser, { new: true }).exec();
+        if (!foundUser)
+            return null;
+        console.log(foundUser);
+        return foundUser;
+    } catch (error) {
+        console.error('Error updating user:', error);
         return null;
-    return foundUser;
+    }
 }
+
 
 async function getPortfolioValue(portfolio) {
     let priceMap = {};
@@ -427,7 +434,6 @@ app.put('/user/:uname', async (req, res) => {
     try {
         const { userData, trade } = req.body;
         const newUser = makeTrade(userData, trade);
-        console.log(newUser);
         const foundUser = await updateUser(uname, newUser);
         if (!foundUser) return res.sendStatus(401); //Unauthorized
         return res.send({ status: "success" })
