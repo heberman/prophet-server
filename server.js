@@ -1,6 +1,5 @@
 require("dotenv").config();
 require("./userDetails");
-require("./tickers.txt");
 
 const express = require("express");
 const cors = require("cors");
@@ -267,7 +266,7 @@ async function makeTrade(user, trade) {
 
 async function buyRandomStock(user) {
     let tickers;
-    fs.readFile('tickers.txt', 'utf8', (err, data) => {
+    fs.readFile('./tickers.txt', 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading file:', err);
             return null;
