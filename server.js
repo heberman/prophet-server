@@ -211,6 +211,8 @@ async function getUser(username) {
 }
 
 async function updateUser(username, newUser) {
+    console.log(username);
+    console.log(newUser);
     try {
         const foundUser = await User.findOneAndUpdate({ user: username }, newUser, { new: true }).exec();
         if (!foundUser)
