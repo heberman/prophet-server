@@ -1,5 +1,6 @@
 require("dotenv").config();
 require("./userDetails");
+require("./tickers.txt");
 
 const express = require("express");
 const cors = require("cors");
