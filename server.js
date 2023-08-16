@@ -248,7 +248,7 @@ async function updateUserValueData(user) {
 }
 
 async function makeTrade(user, trade) {
-    let newUser = user;
+    const newUser = { ...user };
     const { ticker, numShares, price } = trade;
     newUser.trades = [trade, ...newUser.trades];
     if (newUser.portfolio[ticker]) {
@@ -261,7 +261,6 @@ async function makeTrade(user, trade) {
     }
     newUser.cash -= numShares * price;
     return newUser;
-
 }
 
 async function buyRandomStock(user) {
