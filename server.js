@@ -211,13 +211,10 @@ async function getUser(username) {
 }
 
 async function updateUser(username, newUser) {
-    console.log(username);
-    console.log(newUser);
     try {
         const foundUser = await User.findOneAndUpdate({ user: username }, newUser, { new: true }).exec();
         if (!foundUser)
             return null;
-        console.log(foundUser);
         return foundUser;
     } catch (error) {
         console.error('Error updating user:', error);
@@ -434,6 +431,7 @@ app.get('/user/:uname', async (req, res) => {
 app.put('/user/:uname', async (req, res) => {
     const uname = req.params['uname'];
     try {
+        console.log(req.body);
         const { userData, trade } = req.body;
         const newUser = makeTrade(userData, trade);
         const foundUser = await updateUser(uname, newUser);
