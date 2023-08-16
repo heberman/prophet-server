@@ -3,7 +3,7 @@ require("./userDetails");
 
 const express = require("express");
 const cors = require("cors");
-const fs = require('fs');
+const fs = require('fs').promises;
 const mongoose = require("mongoose");
 const User = mongoose.model("UserInfo");
 const port = process.env.PORT || 5000;
@@ -270,29 +270,26 @@ function makeTrade(user, trade) {
 }
 
 async function buyRandomStock(user) {
-    let tickers;
-    fs.readFile('./tickers.txt', 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error reading file:', err);
-            return null;
-        }
-      
-        tickers = data.trim().split('\n');
-    });
+    try {
+        const data = await fs.readFile('./tickers.txt', 'utf8');
+        const tickers = data.trim().split('\n');
 
-    var tickerTradable = false;
-    let randomTicker;
-    let randomTickerPrice;
-    while (!tickerTradable) {
-        randomTicker = tickers[Math.floor(Math.random * tickers.length)];
-        const { currPrice, tradable, error } = await getTickerPrice(randomTicker);
-        randomTickerPrice = currPrice;
-        tickerTradable = error != null || !tradable;
+        let randomTicker;
+        let randomTickerPrice;
+        var tickerTradable = false;
+        while (!tickerTradable) {
+            randomTicker = tickers[Math.floor(Math.random * tickers.length)];
+            const { currPrice, tradable, error } = await getTickerPrice(randomTicker);
+            randomTickerPrice = currPrice;
+            tickerTradable = error != null || !tradable;
+        }
+        const buyShares = Math.floor((user.cash / 8) / randomTickerPrice);
+        const trade = { ticker: randomTicker, numShares: buyShares, date: Date(), price: randomTickerPrice };
+        const newUser = makeTrade(user, trade);
+        return newUser;
+    } catch (err) {
+        console.error('Error reading file:', err);
     }
-    const buyShares = Math.floor((user.cash / 8) / randomTickerPrice);
-    const trade = { ticker: randomTicker, numShares: buyShares, date: Date(), price: randomTickerPrice };
-    const newUser = makeTrade(user, trade);
-    return newUser;
 }
 
 async function sellRandomStockCheck(user, sellAll) {
