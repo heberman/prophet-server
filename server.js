@@ -444,7 +444,7 @@ app.post('/randombuy', async (req, res) => {
         const foundUser = await getUser("randotron");
         if (!foundUser)
             return res.sendStatus(404);
-        const newUser = buyRandomStock(foundUser);
+        const newUser = await buyRandomStock(foundUser);
         const updatedUser = await updateUser("randotron", newUser);
         if (!updatedUser) return res.sendStatus(401); //Unauthorized
         console.log("Randotron: success.");
