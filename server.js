@@ -270,26 +270,24 @@ function makeTrade(user, trade) {
 }
 
 async function buyRandomStock(user) {
-    try {
-        const data = await fs.readFile('./tickers.txt', 'utf8');
-        const tickers = data.trim().split('\n');
+    const data = await fs.readFile('./tickers.txt', 'utf8');
+    const tickers = data.trim().split('\n');
 
-        let randomTicker;
-        let randomTickerPrice;
-        var tickerTradable = false;
-        while (!tickerTradable) {
-            randomTicker = tickers[Math.floor(Math.random * tickers.length)];
-            const { currPrice, tradable, error } = await getTickerPrice(randomTicker);
-            randomTickerPrice = currPrice;
-            tickerTradable = error != null || !tradable;
-        }
-        const buyShares = Math.floor((user.cash / 8) / randomTickerPrice);
-        const trade = { ticker: randomTicker, numShares: buyShares, date: Date(), price: randomTickerPrice };
-        const newUser = makeTrade(user, trade);
-        return newUser;
-    } catch (err) {
-        console.error('Error reading file:', err);
+    let randomTicker;
+    let randomTickerPrice;
+    var tickerTradable = false;
+    while (!tickerTradable) {
+        randomTicker = tickers[Math.floor(Math.random() * tickers.length)];
+        const { currPrice, tradable, error } = await getTickerPrice(randomTicker);
+        if (currPrice == null)
+            throw Error("Error fetching stock data for ticker: " + randomTicker); 
+        randomTickerPrice = currPrice;
+        tickerTradable = error != null || !tradable;
     }
+    const buyShares = Math.floor((user.cash / 8) / randomTickerPrice);
+    const trade = { ticker: randomTicker, numShares: buyShares, date: Date(), price: randomTickerPrice };
+    const newUser = makeTrade(user, trade);
+    return newUser;
 }
 
 async function sellRandomStockCheck(user, sellAll) {
