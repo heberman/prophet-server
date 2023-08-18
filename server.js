@@ -286,12 +286,10 @@ async function buyRandomStock(user) {
     }
     const buyShares = Math.floor((user.cash / 8) / randomTickerPrice);
     const trade = { ticker: randomTicker, numShares: buyShares, date: Date(), price: randomTickerPrice };
-    const newUser = makeTrade(user, trade);
-    return newUser;
+    akeTrade(user, trade);
 }
 
 async function sellRandomStockCheck(user, sellAll) {
-    let newUser = user;
     let rand = 0.0;
     for (const ticker of user.portfolio.keys()) {
         if (!sellAll)
@@ -300,10 +298,9 @@ async function sellRandomStockCheck(user, sellAll) {
             const { currPrice } = await getTickerPrice(ticker);
             const shares = user.portfolio.get(ticker);
             const trade = { ticker, numShares: shares, date: Date(), price: currPrice };
-            newUser = makeTrade(user, trade);
+            makeTrade(user, trade);
         }
     }
-    return newUser;
 }
 
 app.get('/price/:ticker', async (req, res) => {
@@ -442,8 +439,8 @@ app.post('/randombuy', async (req, res) => {
         const foundUser = await getUser("randotron");
         if (!foundUser)
             return res.sendStatus(404);
-        const newUser = await buyRandomStock(foundUser);
-        const updatedUser = await updateUser("randotron", newUser);
+        await buyRandomStock(foundUser);
+        const updatedUser = await updateUser("randotron", foundUser);
         if (!updatedUser) return res.sendStatus(401); //Unauthorized
         console.log("Randotron: success.");
         return res.send({ status: "success" })
@@ -458,8 +455,8 @@ app.post('/randomsell', async (req, res) => {
         const foundUser = await getUser("randotron");
         if (!foundUser)
             return res.sendStatus(404);
-        const newUser = sellRandomStockCheck(foundUser, false);
-        const updatedUser = await updateUser("randotron", newUser);
+        await sellRandomStockCheck(foundUser, false);
+        const updatedUser = await updateUser("randotron", foundUser);
         if (!updatedUser) return res.sendStatus(401); //Unauthorized
         console.log("Randotron: success.");
         return res.send({ status: "success" })
@@ -474,8 +471,8 @@ app.post('/sellall', async (req, res) => {
         const foundUser = await getUser("randotron");
         if (!foundUser)
             return res.sendStatus(404);
-        const newUser = sellRandomStockCheck(foundUser, true);
-        const updatedUser = await updateUser("randotron", newUser);
+        await sellRandomStockCheck(foundUser, true);
+        const updatedUser = await updateUser("randotron", foundUser);
         if (!updatedUser) return res.sendStatus(401); //Unauthorized
         console.log("Randotron: success.");
         return res.send({ status: "success" })
