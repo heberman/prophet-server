@@ -254,21 +254,22 @@ async function updateUserValueData(user) {
 }
 
 function makeTrade(user, trade) {
-    let newUser = user;
+    let newUser = { ...user };
     const { ticker, numShares, price } = trade;
     newUser.trades = [trade, ...newUser.trades];
+    
     if (newUser.portfolio[ticker]) {
-        newUser.portfolio[ticker] += num_shares;
+        newUser.portfolio[ticker] += numShares;
         if (newUser.portfolio[ticker] <= 0) {
             delete newUser.portfolio[ticker];
         }
     } else {
         newUser.portfolio[ticker] = numShares;
     }
+    
     newUser.cash -= numShares * price;
     return newUser;
 }
-
 async function buyRandomStock(user) {
     const data = await fs.readFile('./tickers.txt', 'utf8');
     const tickers = data.trim().split('\n');
