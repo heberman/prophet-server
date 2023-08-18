@@ -256,6 +256,7 @@ async function updateUserValueData(user) {
 function makeTrade(user, trade) {
     let newUser = { ...user };
     const { ticker, numShares, price } = trade;
+    newUser.trades = newUser.trades || [];
     newUser.trades = [trade, ...newUser.trades];
     
     if (newUser.portfolio[ticker]) {
@@ -270,6 +271,7 @@ function makeTrade(user, trade) {
     newUser.cash -= numShares * price;
     return newUser;
 }
+
 async function buyRandomStock(user) {
     const data = await fs.readFile('./tickers.txt', 'utf8');
     const tickers = data.trim().split('\n');
