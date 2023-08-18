@@ -254,22 +254,19 @@ async function updateUserValueData(user) {
 }
 
 function makeTrade(user, trade) {
-    let newUser = { ...user };
     const { ticker, numShares, price } = trade;
-    newUser.trades = newUser.trades || [];
-    newUser.trades = [trade, ...newUser.trades];
+    user.trades = [trade, ...user.trades];
     
-    if (newUser.portfolio[ticker]) {
-        newUser.portfolio[ticker] += numShares;
-        if (newUser.portfolio[ticker] <= 0) {
-            delete newUser.portfolio[ticker];
+    if (user.portfolio[ticker]) {
+        user.portfolio[ticker] += numShares;
+        if (user.portfolio[ticker] <= 0) {
+            delete user.portfolio[ticker];
         }
     } else {
-        newUser.portfolio[ticker] = numShares;
+        user.portfolio[ticker] = numShares;
     }
     
-    newUser.cash -= numShares * price;
-    return newUser;
+    user.cash -= numShares * price;
 }
 
 async function buyRandomStock(user) {
@@ -430,10 +427,10 @@ app.put('/user/:uname', async (req, res) => {
     const uname = req.params['uname'];
     try {
         const { userData, trade } = req.body;
-        const newUser = makeTrade(userData, trade);
-        const foundUser = await updateUser(uname, newUser);
+        makeTrade(userData, trade);
+        const foundUser = await updateUser(uname, userData);
         if (!foundUser) return res.sendStatus(401); //Unauthorized
-        return res.send({ status: "success" })
+        return res.send({ status: "success" });
     } catch (err) {
         return res.send({ status: err.message });
     }
