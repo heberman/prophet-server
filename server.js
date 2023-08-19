@@ -286,7 +286,7 @@ async function buyRandomStock(user) {
     }
     const buyShares = Math.floor((user.cash / 8) / randomTickerPrice);
     const trade = { ticker: randomTicker, numShares: buyShares, date: Date(), price: randomTickerPrice };
-    akeTrade(user, trade);
+    makeTrade(user, trade);
 }
 
 async function sellRandomStockCheck(user, sellAll) {
