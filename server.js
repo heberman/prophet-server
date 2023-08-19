@@ -427,7 +427,7 @@ app.put('/user/:uname', async (req, res) => {
         makeTrade(userData, trade);
         const foundUser = await updateUser(uname, userData);
         if (!foundUser) return res.sendStatus(401); //Unauthorized
-        return res.send({ status: "success" });
+        return res.send({ status: "success", foundUser });
     } catch (err) {
         return res.send({ status: err.message });
     }
