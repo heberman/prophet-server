@@ -257,14 +257,16 @@ function makeTrade(user, trade) {
     const { ticker, numShares, price } = trade;
     user.trades = [trade, ...user.trades];
     
-    if (user.portfolio[ticker]) {
-        user.portfolio[ticker] += numShares;
-        if (user.portfolio[ticker] <= 0) {
-            delete user.portfolio[ticker];
+    let newPortfolio = user.portfolio;
+    if (newPortfolio[ticker]) {
+        newPortfolio[ticker] += numShares;
+        if (newPortfolio[ticker] <= 0) {
+            delete newPortfolio[ticker];
         }
     } else {
-        user.portfolio[ticker] = numShares;
+        newPortfolio[ticker] = numShares;
     }
+    user.portfolio = newPortfolio;
     
     user.cash -= numShares * price;
 }
@@ -443,7 +445,7 @@ app.post('/randombuy', async (req, res) => {
         const updatedUser = await updateUser("randotron", foundUser);
         if (!updatedUser) return res.sendStatus(401); //Unauthorized
         console.log("Randotron: success.");
-        return res.send({ status: "success" })
+        return res.send({ status: "success", newUser: updatedUser })
     } catch (err) {
         return res.send({ status: err.message });
     }
