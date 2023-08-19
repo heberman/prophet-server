@@ -257,16 +257,14 @@ function makeTrade(user, trade) {
     const { ticker, numShares, price } = trade;
     user.trades = [trade, ...user.trades];
     
-    let newPortfolio = user.portfolio;
-    if (newPortfolio[ticker]) {
-        newPortfolio[ticker] += numShares;
-        if (newPortfolio[ticker] <= 0) {
-            delete newPortfolio[ticker];
+    if (user.portfolio[ticker]) {
+        user.portfolio[ticker] += numShares;
+        if (user.portfolio[ticker] <= 0) {
+            delete user.portfolio[ticker];
         }
     } else {
-        newPortfolio[ticker] = numShares;
+        user.portfolio[ticker] = numShares;
     }
-    user.portfolio = newPortfolio;
     
     user.cash -= numShares * price;
 }
@@ -441,6 +439,7 @@ app.post('/randombuy', async (req, res) => {
         const foundUser = await getUser("randotron");
         if (!foundUser)
             return res.sendStatus(404);
+        console.log(foundUser);
         await buyRandomStock(foundUser);
         const updatedUser = await updateUser("randotron", foundUser);
         if (!updatedUser) return res.sendStatus(401); //Unauthorized
