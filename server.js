@@ -280,7 +280,7 @@ async function buyRandomStock(user) {
         randomTicker = tickers[Math.floor(Math.random() * tickers.length)];
         const { currPrice, tradable, error } = await getTickerPrice(randomTicker);
         if (currPrice == null)
-            throw Error("Error fetching stock data for ticker: " + randomTicker); 
+            continue;
         randomTickerPrice = currPrice;
         tickerTradable = error != null || !tradable;
     }
