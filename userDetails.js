@@ -5,7 +5,6 @@ const UserDetailsSchema = new mongoose.Schema(
         user: String,
         pwd: String,
         cash: Number,
-        portfolioValue: Number,
         portfolio: {
             type: Map,
             of: Number
