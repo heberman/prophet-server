@@ -5,7 +5,10 @@ const UserDetailsSchema = new mongoose.Schema(
         user: String,
         pwd: String,
         cash: Number,
-        portfolio: Object,
+        portfolio: {
+            type: Object,
+            default: {}
+        },
         trades: [{ ticker: String, numShares: Number, date: Date, price: Number }],
         valueData: [{date: Date, totalValue: Number }]
     },
