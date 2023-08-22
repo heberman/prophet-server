@@ -258,13 +258,13 @@ function makeTrade(user, trade) {
     
     console.log("User portfolio before update with ticker: " + trade.ticker);
     console.log(user.portfolio);
-    if (user.portfolio.has(trade.ticker)) {
-        user.portfolio.set(trade.ticker, user.portfolio.get(trade.ticker) + trade.numShares);
-        if (user.portfolio.get(trade.ticker) <= 0) {
-            user.portfolio.delete(trade.ticker);
+    if (user.portfolio[trade.ticker]) {
+        user.portfolio[trade.ticker] += trade.numShares;
+        if (user.portfolio[trade.ticker] <= 0) {
+            delete user.portfolio[trade.ticker];
         }
     } else {
-        user.portfolio.set(trade.ticker, trade.numShares);
+        user.portfolio[trade.ticker] = trade.numShares;
     }
     console.log("User portfolio after update:");
     console.log(user.portfolio);
@@ -430,7 +430,6 @@ app.put('/user/:uname', async (req, res) => {
     const uname = req.params['uname'];
     try {
         const { userData, trade } = req.body;
-        console.log(userData);
         makeTrade(userData, trade);
         const updatedUser = await updateUser(uname, userData);
         if (!updatedUser)
@@ -447,11 +446,7 @@ app.post('/randombuy', async (req, res) => {
         const foundUser = await getUser("randotron");
         if (!foundUser)
             return res.sendStatus(404);
-        console.log("Before buyRandomStock");
-        console.log(foundUser);
         await buyRandomStock(foundUser);
-        console.log("After buyRandomStock");
-        console.log(foundUser);
         const updatedUser = await updateUser("randotron", foundUser);
         if (!updatedUser) 
             return res.sendStatus(404);
