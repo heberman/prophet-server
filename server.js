@@ -226,7 +226,7 @@ async function updateUser(username, newUser) {
 async function getPortfolioValue(portfolio) {
     let priceMap = {};
     let portVal = 0;
-    for (const ticker of portfolio.keys()) {
+    for (const ticker of Object.keys(portfolio)) {
         const shares = portfolio.get(ticker);
         const { currPrice } = await getTickerPrice(ticker);
         priceMap[ticker] = currPrice;
