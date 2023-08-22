@@ -227,7 +227,7 @@ async function getPortfolioValue(portfolio) {
     let priceMap = {};
     let portVal = 0;
     for (const ticker of Object.keys(portfolio)) {
-        const shares = portfolio.get(ticker);
+        const shares = portfolio[ticker];
         const { currPrice } = await getTickerPrice(ticker);
         priceMap[ticker] = currPrice;
         portVal += shares * currPrice;
