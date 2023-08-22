@@ -369,6 +369,7 @@ app.post('/register', async (req, res) => {
             user,
             pwd,
             cash: 10000.00,
+            portfolio: {},
             trades: []
         });
         return res.json({ newUser });
