@@ -228,7 +228,9 @@ async function getPortfolioValue(portfolio) {
     let portVal = 0;
     for (const ticker of Object.keys(portfolio)) {
         const shares = portfolio[ticker];
-        const { currPrice } = await getTickerPrice(ticker);
+        const { currPrice, error } = await getTickerPrice(ticker);
+        if (error != null)
+            throw Error(error);
         priceMap[ticker] = currPrice;
         portVal += shares * currPrice;
     }
@@ -241,15 +243,14 @@ async function updateUserValueData(user) {
             const { portVal } = await getPortfolioValue(user.portfolio);
             const totalValue = portVal + user.cash;
             const entry = { date: Date(), totalValue }
-            let newUser = user;
-            newUser.valueData = [entry, ...newUser.valueData];
-            const foundUser = await updateUser(user.user, newUser);
+            user.valueData = [entry, ...user.valueData];
+            const foundUser = await updateUser(user.user, user);
             if (!foundUser) return { status: "User not found" };
         }
         return { status: "success" };
     } catch (err) {
         console.log(err);
-        return err;
+        return { status: err.message };
     }
 }
 
