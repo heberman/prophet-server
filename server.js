@@ -430,6 +430,7 @@ app.put('/user/:uname', async (req, res) => {
     const uname = req.params['uname'];
     try {
         const { userData, trade } = req.body;
+        console.log(userData);
         makeTrade(userData, trade);
         const updatedUser = await updateUser(uname, userData);
         if (!updatedUser)
