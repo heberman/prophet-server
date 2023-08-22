@@ -258,13 +258,13 @@ function makeTrade(user, trade) {
     
     console.log("User portfolio before update with ticker: " + trade.ticker);
     console.log(user.portfolio);
-    if (user.portfolio[trade.ticker]) {
-        user.portfolio[trade.ticker] += trade.numShares;
-        if (user.portfolio[trade.ticker] <= 0) {
-            delete user.portfolio[trade.ticker];
+    if (user.portfolio.has(trade.ticker)) {
+        user.portfolio.set(trade.ticker, user.portfolio.get(trade.ticker) + trade.numShares);
+        if (user.portfolio.get(trade.ticker) <= 0) {
+            user.portfolio.delete(trade.ticker);
         }
     } else {
-        user.portfolio[trade.ticker] = trade.numShares;
+        user.portfolio.set(trade.ticker, trade.numShares);
     }
     console.log("User portfolio after update:");
     console.log(user.portfolio);
