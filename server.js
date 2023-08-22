@@ -283,6 +283,8 @@ async function buyRandomStock(user) {
         randomTicker = tickers[Math.floor(Math.random() * tickers.length)];
         console.log("Trying " + randomTicker + "...");
         const { currPrice, tradable, error } = await getTickerPrice(randomTicker);
+        console.log("Returned price of " + ticker);
+        console.log( { currPrice, tradable, error } );
         if (currPrice != null) {
             randomTickerPrice = currPrice;
             tickerTradable = error != null || !tradable;
@@ -370,7 +372,8 @@ app.post('/register', async (req, res) => {
             pwd,
             cash: 10000.00,
             portfolio: {},
-            trades: []
+            trades: [],
+            valueData: []
         });
         return res.json({ newUser });
     } catch (err) {
