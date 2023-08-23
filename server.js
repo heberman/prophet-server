@@ -284,7 +284,7 @@ async function buyRandomStock(user) {
         console.log( { currPrice, tradable, error } );
         if (currPrice != null) {
             randomTickerPrice = currPrice;
-            tickerTradable = error != null || tradable;
+            tickerTradable = tradable;
         }
     }
     console.log("Making trade with " + randomTicker);
