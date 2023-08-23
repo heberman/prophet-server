@@ -280,8 +280,6 @@ async function buyRandomStock(user) {
         randomTicker = tickers[Math.floor(Math.random() * tickers.length)];
         console.log("Trying " + randomTicker + "...");
         const { currPrice, tradable, error } = await getTickerPrice(randomTicker);
-        console.log("Returned price of " + randomTicker);
-        console.log( { currPrice, tradable, error } );
         if (currPrice != null) {
             randomTickerPrice = currPrice;
             tickerTradable = tradable;
