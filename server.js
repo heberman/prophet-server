@@ -74,8 +74,6 @@ async function getTickerPrice(ticker) {
         error = err.message;
         console.log(err);
     }
-    console.log("Returning these values:");
-    console.log({ currPrice, currDay, tradable, error });
     return { currPrice, currDay, tradable, error };    
 }
 
@@ -286,7 +284,7 @@ async function buyRandomStock(user) {
         console.log( { currPrice, tradable, error } );
         if (currPrice != null) {
             randomTickerPrice = currPrice;
-            tickerTradable = error != null || !tradable;
+            tickerTradable = error != null || tradable;
         }
     }
     console.log("Making trade with " + randomTicker);
