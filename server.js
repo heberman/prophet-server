@@ -298,13 +298,13 @@ async function buyRandomStock(user) {
 
 async function sellRandomStockCheck(user, sellAll) {
     let rand = 0.0;
-    for (const ticker of user.portfolio.keys()) {
+    for (const ticker of Object.keys(user.portfolio)) {
         if (!sellAll)
             rand = Math.random();
         if (rand < 0.2) {
             const { currPrice } = await getTickerPrice(ticker);
-            const shares = user.portfolio.get(ticker);
-            const trade = { ticker, numShares: shares, date: Date(), price: currPrice };
+            const sharesToSell = user.portfolio[ticker] * -1;
+            const trade = { ticker, numShares: sharesToSell, date: Date(), price: currPrice };
             makeTrade(user, trade);
         }
     }
