@@ -47,9 +47,11 @@ async function getTickerPrice(ticker) {
     var currPrice = null;
     var tradable = null;
     var error = null;
+    console.log("Getting data for " + ticker);
 
     try {
         const res = await fetch(api_call);
+        console.log(res);
         if (!res.ok) {
             throw Error('could not fetch the data for that resource');
         }
@@ -70,6 +72,8 @@ async function getTickerPrice(ticker) {
         currDay = times[i];
         currPrice = newData[times[i]]['4. close'];
         tradable = (yesterdayMS - (10 * 60 * 1000)) - new Date(times[i]).getTime() <= 0;
+        console.log(newData[times[i]]);
+        console.log(currPrice);
     } catch (err) {
         error = err.message;
         console.log(err);
