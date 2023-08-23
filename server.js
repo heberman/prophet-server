@@ -51,7 +51,7 @@ async function getTickerPrice(ticker) {
 
     try {
         const res = await fetch(api_call);
-        console.log(res);
+        console.log(res.ok);
         if (!res.ok) {
             throw Error('could not fetch the data for that resource');
         }
@@ -261,8 +261,6 @@ async function updateUserValueData(user) {
 function makeTrade(user, trade) {
     user.trades = [trade, ...user.trades];
     
-    console.log("User portfolio before update with ticker: " + trade.ticker);
-    console.log(user.portfolio);
     if (user.portfolio[trade.ticker]) {
         user.portfolio[trade.ticker] += trade.numShares;
         if (user.portfolio[trade.ticker] <= 0) {
@@ -271,8 +269,6 @@ function makeTrade(user, trade) {
     } else {
         user.portfolio[trade.ticker] = trade.numShares;
     }
-    console.log("User portfolio after update:");
-    console.log(user.portfolio);
 
     user.cash -= trade.numShares * trade.price;
 }
