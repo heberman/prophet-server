@@ -114,8 +114,7 @@ async function getTickerMacd(ticker) {
                     + '&series_type=open'
                     + '&apikey=' + API_KEY;
 
-    var prevMacd = null;
-    var currMacd = null;
+    var macdArr = [];
     var error = null;
 
     try {
@@ -139,11 +138,15 @@ async function getTickerMacd(ticker) {
         }
         prevMacd = newData[times[i+1]]['MACD'];
         currMacd = newData[times[i]]['MACD'];
+        for (let x = i + 4; x > i - 1; x--) {
+            macdArr.push(newData[times[x]]['MACD']);
+        }
     } catch (err) {
         error = err.message;
+        macdArr = null;
         console.log(err);
     }
-    return { prevMacd, currMacd, error }; 
+    return { macdArr, error }; 
 }
 
 async function getTickerSma(ticker) {
@@ -279,7 +282,7 @@ async function buyRandomStock(user) {
     while (!tickerTradable) {
         randomTicker = tickers[Math.floor(Math.random() * tickers.length)];
         console.log("Trying " + randomTicker + "...");
-        const { currPrice, tradable, error } = await getTickerPrice(randomTicker);
+        const { currPrice, tradable } = await getTickerPrice(randomTicker);
         if (currPrice != null) {
             randomTickerPrice = currPrice;
             tickerTradable = tradable;
@@ -298,7 +301,7 @@ async function sellRandomStockCheck(user, sellAll) {
         if (!sellAll)
             rand = Math.random();
         console.log("Random number: " + rand);
-        if (rand < 0.2) {
+        if (rand < 0.18) {
             const { currPrice } = await getTickerPrice(ticker);
             const sharesToSell = user.portfolio[ticker] * -1;
             const trade = { ticker, numShares: sharesToSell, date: Date(), price: currPrice };
@@ -307,6 +310,73 @@ async function sellRandomStockCheck(user, sellAll) {
             makeTrade(user, trade);
         }
     }
+}
+
+function macdHasCrossed(macdArr, fromBelow) {
+    for (const macd in macdArr) {
+        if (macd * fromBelow < 0)
+            return false;
+    }
+    return true;
+}
+
+async function algoTrade(user) {
+    // check current holdings for sell opportunities: sell limits then macd
+    for (const ownedTicker in Object.keys(user.portfolio)) {
+        // get price when stock was bought
+        var buyPrice = null;
+        for (const trade in user.trades) {
+            if (trade.ticker === ownedTicker) {
+                buyPrice = trade.price;
+                break;
+            }
+        }
+        if (!buyPrice)
+            throw Error("Ticker not found in trade history: " + ownedTicker);
+
+        // sell stock if limit surpassed
+        const upperLimitPrice = buyPrice * 1.03;
+        const lowerLimitPrice = buyPrice * 0.97;
+
+        const { currPrice } = await getTickerPrice(ownedTicker);
+        if (!currPrice)
+            throw Error("Error fetching price for: " + ownedTicker);
+
+        const limitOrderSell = currPrice > upperLimitPrice || currPrice < lowerLimitPrice;
+        let macdSell = false;
+        if (!limitOrderSell) {
+            // price did not surpass either limit, checking macd
+            const { macdArr } = await getTickerMacd(ownedTicker);
+            if (!macdArr)
+                throw Error("Error fetching MACD for: " + ownedTicker);
+
+            let i = 0;
+            while (i < macdArr.length - 1) {
+                if (macdArr[i] > 0 && macdArr[i + 1] < 0) {
+                    if (i >= macdArr.length - 2 || macdHasCrossed(macdArr.slice(i + 2), -1)) {
+                        macdSell = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (limitOrderSell || macdSell) {
+            if (limitOrderSell)
+                console.log("Selling shares on limit order: " + ownedTicker);
+            if (macdSell)
+                console.log("Selling shares due to MACD: " + ownedTicker);
+            console.log("Buy price: " + buyPrice);
+            console.log("Sell price: " + currPrice);
+            
+            const trade = { ownedTicker, numShares: user.portfolio[ownedTicker] * -1, date: Date(), price: currPrice };
+            console.log(trade);
+            makeTrade(user, trade);
+        }
+
+    }
+    // check max 10 random stocks and buy if macd crossed zero line from above in last 5 min
+    // cant buy stock already owned
 }
 
 app.get('/price/:ticker', async (req, res) => {
