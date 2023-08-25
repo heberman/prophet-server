@@ -138,7 +138,7 @@ async function getTickerMacd(ticker) {
         }
         prevMacd = newData[times[i+1]]['MACD'];
         currMacd = newData[times[i]]['MACD'];
-        for (let x = i + 4; x > i - 1; x--) {
+        for (let x = i + 7; x > i - 1; x--) {
             macdArr.push(newData[times[x]]['MACD']);
         }
     } catch (err) {
@@ -409,12 +409,12 @@ async function algoTrade(user) {
             makeTrade(user, trade);
         }
     }
-    // check max 10 random stocks and buy if macd crossed zero line from above in last 5 min
+    // check max 5 random stocks and buy if macd crossed zero line from above in last 8 min
     // cant buy stock already owned
     const tickers = await getTickers();
 
     let i = 0;
-    while (i < 10) {
+    while (i < 5) {
         const { randomTicker, randomTickerPrice } = await findRandomStock(tickers, user.portfolio);
 
         // check if MACD zero line of randomTicker was crossed from below
