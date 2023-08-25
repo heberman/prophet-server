@@ -422,7 +422,7 @@ async function algoTrade(user) {
         const macdBuy = await macdZeroLineCrossed(randomTicker, 1);
         if (macdBuy) {
             console.log("Making trade with " + randomTicker);
-            const buyShares = Math.floor((user.cash / 4) / randomTickerPrice);
+            const buyShares = Math.floor((user.cash / 3) / randomTickerPrice);
             const trade = { ticker: randomTicker, numShares: buyShares, date: Date(), price: randomTickerPrice };
             console.log(trade);
             makeTrade(user, trade);
