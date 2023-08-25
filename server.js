@@ -293,6 +293,7 @@ async function findRandomStock(tickers, portfolio) {
                 tickerTradable = tradable;
             }
         }
+        i++;
     }
 
     if (i >= 10)
