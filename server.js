@@ -368,6 +368,8 @@ async function macdZeroLineCrossed(ticker, fromBelow) {
     if (!macdArr)
         throw Error("Error fetching MACD for: " + ticker);
 
+    console.log(macdArr);
+
     let i = 0;
     while (i < macdArr.length - 1) {
         if (macdArr[i] * fromBelow < 0 && macdArr[i + 1] * fromBelow > 0) {
