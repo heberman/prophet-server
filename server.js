@@ -257,6 +257,11 @@ async function updateUserValueData(user) {
     }
 }
 
+async function getTickers() {
+    const data = await fs.readFile('./tickers.txt', 'utf8');
+    return data.trim().split('\n');
+}
+
 function makeTrade(user, trade) {
     user.trades = [trade, ...user.trades];
     
@@ -272,22 +277,35 @@ function makeTrade(user, trade) {
     user.cash -= trade.numShares * trade.price;
 }
 
-async function buyRandomStock(user) {
-    const data = await fs.readFile('./tickers.txt', 'utf8');
-    const tickers = data.trim().split('\n');
-
+async function findRandomStock(tickers, portfolio) {
+    let i = 0;
     let randomTicker;
     let randomTickerPrice;
     let tickerTradable = false;
-    while (!tickerTradable) {
+
+    while (!tickerTradable && i < 10) {
         randomTicker = tickers[Math.floor(Math.random() * tickers.length)];
-        console.log("Trying " + randomTicker + "...");
-        const { currPrice, tradable } = await getTickerPrice(randomTicker);
-        if (currPrice != null) {
-            randomTickerPrice = currPrice;
-            tickerTradable = tradable;
+        if (!portfolio[randomTicker]) {
+            console.log("Trying " + randomTicker + "...");
+            const { currPrice, tradable } = await getTickerPrice(randomTicker);
+            if (currPrice != null) {
+                randomTickerPrice = currPrice;
+                tickerTradable = tradable;
+            }
         }
     }
+
+    if (i >= 10)
+        throw Error("Unable to find random stock");
+
+    return { randomTicker, randomTickerPrice };
+}
+
+async function buyRandomStock(user) {
+    const tickers = await getTickers();
+
+    const { randomTicker, randomTickerPrice } = await findRandomStock(tickers, user.portfolio);
+
     console.log("Making trade with " + randomTicker);
     const buyShares = Math.floor((user.cash / 5) / randomTickerPrice);
     const trade = { ticker: randomTicker, numShares: buyShares, date: Date(), price: randomTickerPrice };
@@ -332,12 +350,14 @@ async function tickerPriceExceededLimit(ticker, trades) {
     if (!currPrice)
         throw Error("Error fetching price for: " + ticker);
 
-    return currPrice > upperLimitPrice || currPrice < lowerLimitPrice;
+    const limitOrderSell = currPrice > upperLimitPrice || currPrice < lowerLimitPrice
+
+    return { limitOrderSell, buyPrice, currPrice };
 }
 
 function macdZeroLineRemainedCrossed(macdArr, fromBelow) {
     for (const macd in macdArr) {
-        if (macd * fromBelow < 0)
+        if (macd * fromBelow > 0)
             return false;
     }
     return true;
@@ -350,7 +370,7 @@ async function macdZeroLineCrossed(ticker, fromBelow) {
 
     let i = 0;
     while (i < macdArr.length - 1) {
-        if (macdArr[i] * fromBelow > 0 && macdArr[i + 1] * fromBelow < 0) {
+        if (macdArr[i] * fromBelow < 0 && macdArr[i + 1] * fromBelow > 0) {
             if (i >= macdArr.length - 2 || macdZeroLineRemainedCrossed(macdArr.slice(i + 2), fromBelow)) {
                 return true;
             }
@@ -365,7 +385,7 @@ async function algoTrade(user) {
     // check current holdings for sell opportunities: limits then macd
     for (const ownedTicker in Object.keys(user.portfolio)) {
         // first check ticker price when bought and current to determine if a upper or lower limit was exceeded
-        const limitOrderSell = await tickerPriceExceededLimit(ownedTicker, user.trades);
+        const { limitOrderSell, buyPrice, currPrice } = await tickerPriceExceededLimit(ownedTicker, user.trades);
 
         let macdSell = false;
         if (!limitOrderSell) {
@@ -378,7 +398,7 @@ async function algoTrade(user) {
             if (limitOrderSell)
                 console.log("Selling shares on limit order: " + ownedTicker);
             if (macdSell)
-                console.log("Selling shares due to MACD: " + ownedTicker);
+                console.log("Selling shares due to MACD zero line cross from above: " + ownedTicker);
             console.log("Buy price: " + buyPrice);
             console.log("Sell price: " + currPrice);
             
@@ -389,25 +409,12 @@ async function algoTrade(user) {
     }
     // check max 10 random stocks and buy if macd crossed zero line from above in last 5 min
     // cant buy stock already owned
-    const data = await fs.readFile('./tickers.txt', 'utf8');
-    const tickers = data.trim().split('\n');
+    const tickers = await getTickers();
 
     let i = 0;
     while (i < 10) {
-        let randomTicker;
-        let randomTickerPrice;
-        let tickerTradable = false;
-        while (!tickerTradable) {
-            randomTicker = tickers[Math.floor(Math.random() * tickers.length)];
-            if (!user.portfolio[randomTicker]) {
-                console.log("Trying " + randomTicker + "...");
-                const { currPrice, tradable } = await getTickerPrice(randomTicker);
-                if (currPrice != null) {
-                    randomTickerPrice = currPrice;
-                    tickerTradable = tradable;
-                }
-            }
-        }
+        const { randomTicker, randomTickerPrice } = await findRandomStock(tickers, user.portfolio);
+
         // check if MACD zero line of randomTicker was crossed from below
         console.log("Checking MACD of " + randomTicker);
         const macdBuy = await macdZeroLineCrossed(randomTicker, 1);
@@ -555,8 +562,25 @@ app.put('/user/:uname', async (req, res) => {
     }
 });
 
+app.post('/algotrade', async (req, res) => {
+    console.log("prophetron: running algorithm...");
+    try {
+        const foundUser = await getUser("prophetron");
+        if (!foundUser)
+            return res.sendStatus(404);
+        await algoTrade(foundUser);
+        const updatedUser = await updateUser("prophetron", foundUser);
+        if (!updatedUser) 
+            return res.sendStatus(404);
+        console.log("prophetron: success.");
+        return res.send({ status: "success", newUser: updatedUser })
+    } catch (err) {
+        return res.send({ status: err.message });
+    }
+});
+
 app.post('/randombuy', async (req, res) => {
-    console.log("Randotron: buying random stock...");
+    console.log("randotron: buying random stock...");
     try {
         const foundUser = await getUser("randotron");
         if (!foundUser)
@@ -565,7 +589,7 @@ app.post('/randombuy', async (req, res) => {
         const updatedUser = await updateUser("randotron", foundUser);
         if (!updatedUser) 
             return res.sendStatus(404);
-        console.log("Randotron: success.");
+        console.log("randotron: success.");
         return res.send({ status: "success", newUser: updatedUser })
     } catch (err) {
         return res.send({ status: err.message });
@@ -573,7 +597,7 @@ app.post('/randombuy', async (req, res) => {
 });
 
 app.post('/randomsell', async (req, res) => {
-    console.log("Randotron: possibly selling random stock...");
+    console.log("randotron: possibly selling random stock...");
     try {
         const foundUser = await getUser("randotron");
         if (!foundUser)
@@ -581,7 +605,7 @@ app.post('/randomsell', async (req, res) => {
         await sellRandomStockCheck(foundUser, false);
         const updatedUser = await updateUser("randotron", foundUser);
         if (!updatedUser) return res.sendStatus(401); //Unauthorized
-        console.log("Randotron: success.");
+        console.log("randotron: success.");
         return res.send({ status: "success" })
     } catch (err) {
         return res.send({ status: err.message });
@@ -589,15 +613,16 @@ app.post('/randomsell', async (req, res) => {
 });
 
 app.post('/sellall', async (req, res) => {
-    console.log("Randotron: selling rest of stocks...");
+    const { username } = req.body;
+    console.log(username + ": selling rest of stocks...");
     try {
-        const foundUser = await getUser("randotron");
+        const foundUser = await getUser(username);
         if (!foundUser)
             return res.sendStatus(404);
         await sellRandomStockCheck(foundUser, true);
-        const updatedUser = await updateUser("randotron", foundUser);
+        const updatedUser = await updateUser(username, foundUser);
         if (!updatedUser) return res.sendStatus(401); //Unauthorized
-        console.log("Randotron: success.");
+        console.log(username + ": success.");
         return res.send({ status: "success" })
     } catch (err) {
         return res.send({ status: err.message });
