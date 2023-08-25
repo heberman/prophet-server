@@ -357,7 +357,7 @@ async function tickerPriceExceededLimit(ticker, trades) {
 
 function macdZeroLineRemainedCrossed(macdArr, fromBelow) {
     for (const macd in macdArr) {
-        if (macd * fromBelow > 0)
+        if (macd * fromBelow < 0)
             return false;
     }
     return true;
