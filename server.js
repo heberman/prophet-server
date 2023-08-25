@@ -333,7 +333,7 @@ async function sellRandomStockCheck(user, sellAll) {
 async function tickerPriceExceededLimit(ticker, trades) {
     // get price when stock was bought
     let buyPrice = null;
-    for (const trade in trades) {
+    for (const trade of trades) {
         if (trade.ticker === ticker) {
             buyPrice = trade.price;
             break;
