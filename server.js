@@ -409,12 +409,12 @@ async function algoTrade(user) {
             makeTrade(user, trade);
         }
     }
-    // check max 5 random stocks and buy if macd crossed zero line from above in last 8 min
+    // check max 3 random stocks and buy if macd crossed zero line from above in last 8 min
     // cant buy stock already owned
     const tickers = await getTickers();
 
     let i = 0;
-    while (i < 5) {
+    while (i < 3) {
         const { randomTicker, randomTickerPrice } = await findRandomStock(tickers, user.portfolio);
 
         // check if MACD zero line of randomTicker was crossed from below
