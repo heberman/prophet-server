@@ -344,8 +344,8 @@ async function tickerPriceExceededLimit(ticker, trades) {
         throw Error("Ticker not found in trade history: " + ticker);
 
     // sell stock if limit surpassed
-    const upperLimitPrice = buyPrice * 1.02;
-    const lowerLimitPrice = buyPrice * 0.98;
+    const upperLimitPrice = buyPrice * 1.01;
+    const lowerLimitPrice = buyPrice * 0.99;
 
     const { currPrice } = await getTickerPrice(ticker);
     if (!currPrice)
@@ -411,25 +411,27 @@ async function algoTrade(user) {
         }
     }
     // check max 3 random stocks and buy if macd crossed zero line from above in last 8 min
-    // cant buy stock already owned
-    const tickers = await getTickers();
+    // cant buy stock already owned or if more than 2 stocks are already owned
+    if (Object.keys(user.portfolio).length < 3) {
+        const tickers = await getTickers();
 
-    let i = 0;
-    while (i < 3) {
-        const { randomTicker, randomTickerPrice } = await findRandomStock(tickers, user.portfolio);
+        let i = 0;
+        while (i < 3) {
+            const { randomTicker, randomTickerPrice } = await findRandomStock(tickers, user.portfolio);
 
-        // check if MACD zero line of randomTicker was crossed from below
-        console.log("Checking MACD of " + randomTicker);
-        const macdBuy = await macdZeroLineCrossed(randomTicker, 1);
-        if (macdBuy) {
-            console.log("Making trade with " + randomTicker);
-            const buyShares = Math.floor((user.cash / 3) / randomTickerPrice);
-            const trade = { ticker: randomTicker, numShares: buyShares, date: Date(), price: randomTickerPrice };
-            console.log(trade);
-            makeTrade(user, trade);
-            return;
+            // check if MACD zero line of randomTicker was crossed from below
+            console.log("Checking MACD of " + randomTicker);
+            const macdBuy = await macdZeroLineCrossed(randomTicker, 1);
+            if (macdBuy) {
+                console.log("Making trade with " + randomTicker);
+                const buyShares = Math.floor((user.cash / 3) / randomTickerPrice);
+                const trade = { ticker: randomTicker, numShares: buyShares, date: Date(), price: randomTickerPrice };
+                console.log(trade);
+                makeTrade(user, trade);
+                return;
+            }
+            i++;
         }
-        i++;
     }
 }
 
