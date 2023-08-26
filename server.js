@@ -387,6 +387,7 @@ async function macdZeroLineCrossed(ticker, fromBelow) {
 async function algoTrade(user) {
     // check current holdings for sell opportunities: limits then macd
     for (const ownedTicker of Object.keys(user.portfolio)) {
+        console.log("Checking sell potential for: " + ownedTicker);
         // first check ticker price when bought and current to determine if a upper or lower limit was exceeded
         const { limitOrderSell, buyPrice, currPrice } = await tickerPriceExceededLimit(ownedTicker, user.trades);
 
