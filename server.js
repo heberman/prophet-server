@@ -385,6 +385,7 @@ async function macdZeroLineCrossed(ticker, fromBelow) {
 }
 
 async function algoTrade(user) {
+    const stocksOwned = Object.keys(user.portfolio).length;
     // check current holdings for sell opportunities: limits then macd
     for (const ownedTicker of Object.keys(user.portfolio)) {
         console.log("Checking sell potential for: " + ownedTicker);
@@ -413,7 +414,6 @@ async function algoTrade(user) {
     }
     // check max 3 random stocks and buy if macd crossed zero line from above in last 8 min
     // cant buy stock already owned or if more than 2 stocks are already owned
-    const stocksOwned = Object.keys(user.portfolio).length;
     if (stocksOwned < 3) {
         const tickers = await getTickers();
 
