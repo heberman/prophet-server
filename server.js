@@ -413,10 +413,11 @@ async function algoTrade(user) {
     }
     // check max 3 random stocks and buy if macd crossed zero line from above in last 8 min
     // cant buy stock already owned or if more than 2 stocks are already owned
-    if (Object.keys(user.portfolio).length < 3) {
+    const stocksOwned = Object.keys(user.portfolio).length;
+    if (stocksOwned < 3) {
         const tickers = await getTickers();
 
-        let i = 0;
+        let i = stocksOwned;
         while (i < 3) {
             const { randomTicker, randomTickerPrice } = await findRandomStock(tickers, user.portfolio);
 
