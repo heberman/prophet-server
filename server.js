@@ -580,7 +580,7 @@ app.post('/algotrade', async (req, res) => {
         if (!updatedUser) 
             return res.sendStatus(404);
         console.log("prophetron: success.");
-        return res.send({ status: "success", newUser: updatedUser })
+        return res.send({ status: "success" })
     } catch (err) {
         return res.send({ status: err.message });
     }
@@ -597,7 +597,7 @@ app.post('/randombuy', async (req, res) => {
         if (!updatedUser) 
             return res.sendStatus(404);
         console.log("randotron: success.");
-        return res.send({ status: "success", newUser: updatedUser })
+        return res.send({ status: "success" })
     } catch (err) {
         return res.send({ status: err.message });
     }
