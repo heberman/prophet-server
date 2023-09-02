@@ -344,8 +344,8 @@ async function tickerPriceExceededLimit(ticker, trades) {
         throw Error("Ticker not found in trade history: " + ticker);
 
     // sell stock if limit surpassed
-    const upperLimitPrice = buyPrice * 1.01;
-    const lowerLimitPrice = buyPrice * 0.99;
+    const upperLimitPrice = buyPrice * 1.012;
+    const lowerLimitPrice = buyPrice * 0.988;
 
     const { currPrice } = await getTickerPrice(ticker);
     if (!currPrice)
