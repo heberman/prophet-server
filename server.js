@@ -362,6 +362,7 @@ function macdZeroLineRemainedCrossed(macdArr, fromBelow) {
         if (macdArr[i] * fromBelow > macdArr[i + 1] * fromBelow) {
             return false;
         }
+        i++;
     }
     return true;
 }
