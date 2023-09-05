@@ -357,9 +357,11 @@ async function tickerPriceExceededLimit(ticker, trades) {
 }
 
 function macdZeroLineRemainedCrossed(macdArr, fromBelow) {
-    for (const macd in macdArr) {
-        if (macd * fromBelow < 0)
+    let i = 0;
+    while (i < macdArr.length - 1) {
+        if (macdArr[i] * fromBelow > macdArr[i + 1] * fromBelow) {
             return false;
+        }
     }
     return true;
 }
@@ -374,7 +376,7 @@ async function macdZeroLineCrossed(ticker, fromBelow) {
     let i = 0;
     while (i < macdArr.length - 1) {
         if (macdArr[i] * fromBelow < 0 && macdArr[i + 1] * fromBelow > 0) {
-            if (i >= macdArr.length - 2 || macdZeroLineRemainedCrossed(macdArr.slice(i + 2), fromBelow)) {
+            if (i >= macdArr.length - 2 || macdZeroLineRemainedCrossed(macdArr.slice(i + 1), fromBelow)) {
                 return true;
             }
         }
